@@ -35,7 +35,7 @@ class Crowd_Fundraiser_i18n {
 	public function load_plugin_textdomain() {
 
 		load_plugin_textdomain(
-			'crowd-fundraiser',
+			CROWD_FUNDRAISER_TEXT_DOMAIN,
 			false,
 			dirname( dirname( plugin_basename( __FILE__ ) ) ) . '/languages/'
 		);

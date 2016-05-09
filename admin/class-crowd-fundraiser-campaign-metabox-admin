@@ -1,0 +1,49 @@
+<?php
+
+/**
+ * Metabox for campaign in backend
+ *
+ *
+ * @link       https://github.com/adhocmaster/crowd-fundraiser
+ * @since      1.0.0
+ *
+ * @package    Crowd_Fundraiser
+ * @subpackage Crowd_Fundraiser/includes
+ */
+
+/**
+ * The core plugin class.
+ *
+ * This is used to define internationalization, admin-specific hooks, and
+ * public-facing site hooks.
+ *
+ * Also maintains the unique identifier of this plugin as well as the current
+ * version of the plugin.
+ *
+ * @since      1.0.0
+ * @package    Crowd_Fundraiser
+ * @subpackage Crowd_Fundraiser/includes
+ * @author     AdhocMaster <adhocmaster@live.com>
+ */
+class Crowd_Fundraiser_Campaign_Metabox {
+
+
+	public function __construct() {
+
+
+	}
+
+	public function add_metabox() {
+
+		add_meta_box(
+			CROWD_FUNDRAISER_SLUG,
+			__( 'Car Info', 'text_domain' ),
+			array( $this, 'render_metabox' ),
+			'car',
+			'advanced',
+			'default'
+		);
+
+	}
+
+}

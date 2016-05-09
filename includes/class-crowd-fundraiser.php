@@ -68,7 +68,7 @@ class Crowd_Fundraiser {
 	 */
 	public function __construct() {
 
-		$this->crowd_fundraiser = 'crowd-fundraiser';
+		$this->crowd_fundraiser = CROWD_FUNDRAISER_SLUG;
 		$this->version = CROWD_FUNDRAISER_VERSION_NUM;
 
 		$this->load_dependencies();
@@ -154,6 +154,8 @@ class Crowd_Fundraiser {
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
 
+		$this->loader->add_action( 'admin_init', 'Crowd_Fundraiser_Activator', 'upgrade' );
+
 	}
 
 	/**
@@ -171,6 +173,10 @@ class Crowd_Fundraiser {
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts' );
 
 		$this->loader->add_action( 'init', 'Crowd_Fundraiser_Custom_Post', 'register' );
+
+		$campaign_controller = new Crowd_Fundraiser_Campaign_Controller($this->loader);
+
+
 
 	}
 

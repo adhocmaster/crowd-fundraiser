@@ -20,7 +20,56 @@
  * @subpackage Crowd_Fundraiser/includes
  * @author     AdhocMaster <adhocmaster@live.com>
  */
-class Crowd_Fundraiser_Campaign {
+class Crowd_Fundraiser_Campaign_Controller {
+
+
+	/**
+	 * The loader that's responsible for maintaining and registering all hooks that power
+	 * the plugin.
+	 *
+	 * @since    1.0.0
+	 * @access   protected
+	 * @var      Crowd_Fundraiser_Loader    $loader    Maintains and registers all hooks for the plugin.
+	 */
+	protected $loader;
+
+	public function __construct($hook_loader) {
+
+		$this->loader = $hook_loader;
+
+		$this->define_admin_hooks();
+		$this->define_public_hooks();
+
+	}
+
+
+
+	/**
+	 * Register all of the hooks related to the admin area functionality
+	 * of the plugin.
+	 *
+	 * @since    1.0.0
+	 * @access   private
+	 */
+	private function define_admin_hooks() {
+
+
+	}
+
+	/**
+	 * Register all of the hooks related to the public-facing functionality
+	 * of the plugin.
+	 *
+	 * @since    1.0.0
+	 * @access   private
+	 */
+	private function define_public_hooks() {
+
+		// $campaign_controller = new Crowd_Fundraiser_Campaign_Controller($this->loader);
+
+
+
+	}
 
 	/**
 	 * Short Description. (use period)
@@ -78,5 +127,13 @@ class Crowd_Fundraiser_Campaign {
 		register_post_type( 'campaign', $args );
 
 	}
+
+	/**
+	 * Short Description. (use period)
+	 *
+	 * Long Description.
+	 *
+	 * @since    1.0.0
+	 */
 
 }

@@ -31,7 +31,7 @@ class Crowd_Fundraiser_Custom_Post {
 	 */
 	public static function register() {
 
-		Crowd_Fundraiser_Campaign::register_custom_post();
+		Crowd_Fundraiser_Campaign_Controller::register_custom_post();
 
 
 	}
