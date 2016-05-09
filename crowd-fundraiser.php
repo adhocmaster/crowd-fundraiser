@@ -30,42 +30,18 @@ if ( ! defined( 'WPINC' ) ) {
 	die;
 }
 
-/**
- * The code that runs during plugin activation.
- * This action is documented in includes/class-crowd-fundraiser-activator.php
- */
-function activate_crowd_fundraiser() {
-	require_once plugin_dir_path( __FILE__ ) . 'includes/class-crowd-fundraiser-activator.php';
-	Crowd_Fundraiser_Activator::activate();
-}
+if (!defined('CROWD_FUNDRAISER_PATH'))
+	define( 'CROWD_FUNDRAISER_PATH', plugin_dir_path( __FILE__ ) );
 
-/**
- * The code that runs during plugin deactivation.
- * This action is documented in includes/class-crowd-fundraiser-deactivator.php
- */
-function deactivate_crowd_fundraiser() {
-	require_once plugin_dir_path( __FILE__ ) . 'includes/class-crowd-fundraiser-deactivator.php';
-	Crowd_Fundraiser_Deactivator::deactivate();
-}
+if (!defined('CROWD_FUNDRAISER_URL'))
+	define( 'CROWD_FUNDRAISER_URL', plugin_dir_url( __FILE__ ) );
 
-/**
- * The code that runs during plugin upgrade.
- * This action is documented in includes/class-crowd-fundraiser-activator.php
- */
-function upgrade_crowd_fundraiser() {
-	require_once plugin_dir_path( __FILE__ ) . 'includes/class-crowd-fundraiser-activator.php';
-	Crowd_Fundraiser_Activator::upgrade();
-}
+require_once plugin_dir_path( __FILE__ ) . 'includes/bootstrap.php';
 
-register_activation_hook( __FILE__, 'activate_crowd_fundraiser' );
-register_deactivation_hook( __FILE__, 'deactivate_crowd_fundraiser' );
-add_action( 'plugins_loaded', 'upgrade_crowd_fundraiser' );
+register_activation_hook(__FILE__, array('Crowd_Fundraiser_Activator', 'activate'));
 
-/**
- * The core plugin class that is used to define internationalization,
- * admin-specific hooks, and public-facing site hooks.
- */
-require plugin_dir_path( __FILE__ ) . 'includes/class-crowd-fundraiser.php';
+register_deactivation_hook( __FILE__, array('Crowd_Fundraiser_Deactivator', 'deactivate') );
+
 
 /**
  * Begins execution of the plugin.

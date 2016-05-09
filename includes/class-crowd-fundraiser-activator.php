@@ -35,6 +35,11 @@ class Crowd_Fundraiser_Activator {
 
 		// static::upgrade();
 
+		Crowd_Fundraiser_Custom_Post::register();
+
+		// Clear the permalinks after the post types has been registered
+    	flush_rewrite_rules();
+
 	}
 
 	/**
@@ -67,6 +72,8 @@ class Crowd_Fundraiser_Activator {
 		dbDelta( $sql );
 
 
+
+
 	}
 
 	/**
@@ -76,7 +83,7 @@ class Crowd_Fundraiser_Activator {
 	 * @access   private
 	 */
 
-	private static function upgrade() {
+	public static function upgrade() {
 
 		if (get_option(CROWD_FUNDRAISER_VERSION_KEY) != CROWD_FUNDRAISER_VERSION_NUM) {
 
