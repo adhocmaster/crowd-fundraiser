@@ -90,23 +90,22 @@ class Crowd_Fundraiser_Campaign_Metabox_Admin {
 
         global $post;
         
-        $campaign_id = get_post_meta( $post->ID, Crowd_Fundraiser_Campaign::META_NAME_CAUSE_ID, true );
+        $cause_id = get_post_meta( $post->ID, Crowd_Fundraiser_Campaign::META_NAME_CAUSE_ID, true );
         // other meta data
        
-        $campaign_id_label = __( 'Campaign ID', CROWD_FUNDRAISER_TEXT_DOMAIN );
+        $cause_id_label = __( 'Campaign ID', CROWD_FUNDRAISER_TEXT_DOMAIN );
         // other labels
         
         $table = "
-			<div>see_help_message</div>
+			<div>Put the post ID of the Cause here.</div>
 
 			<table class='form-table'>
-			<tr>
-			<th scope='row'><label for='campaign_id'>$campaign_id_label</label></th>
-			    <td><input type='text' name='campaign_id' id='campaign_id' value='$campaign_id' /></td>
-			</tr>
-		    
-		        // html elements of other metadata fields
-
+			
+				<tr>
+					<th scope='row'><label for='cause_id'>$cause_id_label</label></th>
+				    <td><input type='text' value='$cause_id' disabled /></td>
+				</tr>
+		   
 		    </table>";
 		
 		return $table;
@@ -117,19 +116,11 @@ class Crowd_Fundraiser_Campaign_Metabox_Admin {
 
         global $post;
         
-        $id = 'locker_text';
-        $name = 'locker_text';
+        $id = 'cause_id';
+        $name = 'cause_id';
         $value = wp_kses_post( get_post_meta( $post->ID, Crowd_Fundraiser_Campaign::META_NAME_CAUSE_ID, true ) );
         
-        $editor_options = array(
-                'textarea_name' => $name,
-                'textarea_rows' => 10,
-                'tinymce' => array(
-                        'toolbar1' => 'bold italic underline | alignleft aligncenter alignright | outdent indent | undo redo |  fullscreen',
-                        'toolbar2' => 'formatselect fontselect fontsizeselect | forecolor backcolor | removeformat'
-                )
-        );
-        wp_editor( $value, $id, $editor_options );
+        echo "<div><input type='text' id='cause_id' name='cause_id' value='{$value}' /> </div>";
 
     }
 

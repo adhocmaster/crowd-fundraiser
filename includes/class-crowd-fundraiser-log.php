@@ -20,7 +20,7 @@
  * @subpackage Crowd_Fundraiser/includes
  * @author     AdhocMaster <adhocmaster@live.com>
  */
-class Crowd_Fundraiser_Activator {
+class Crowd_Fundraiser_Log {
 
 	/**
 	 * Short Description. (use period)
@@ -43,6 +43,14 @@ class Crowd_Fundraiser_Activator {
 	            
 	        }
 	    }
+
+	}
+
+	public static function echo_admin($error, $type = 'error') {
+
+        if ( $error ) {
+            echo "<div class='notice notice-{$type} is-dismissible'><p><b style='color:#00a0d2'>Crowd Fundraiser:</b> {$error}</p></div>";
+        }
 
 	}
 
