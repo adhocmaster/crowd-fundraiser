@@ -23,6 +23,10 @@
 class Crowd_Fundraiser_Campaign_Controller {
 
 
+	protected $loader;
+
+	private static $instance = null;
+
 	/**
 	 * The loader that's responsible for maintaining and registering all hooks that power
 	 * the plugin.
@@ -31,14 +35,25 @@ class Crowd_Fundraiser_Campaign_Controller {
 	 * @access   protected
 	 * @var      Crowd_Fundraiser_Loader    $loader    Maintains and registers all hooks for the plugin.
 	 */
-	protected $loader;
-
-	public function __construct($hook_loader) {
+	
+	protected function __construct($hook_loader) {
 
 		$this->loader = $hook_loader;
 
 		$this->define_admin_hooks();
 		$this->define_public_hooks();
+
+	}
+
+	public static function get_instance($hook_loader = null) {
+
+		if( is_null(self::$instance) ) {
+
+			self::$instance = new Crowd_Fundraiser_Campaign_Controller($hook_loader);
+
+		}
+
+		return self::$instance;
 
 	}
 
@@ -242,6 +257,12 @@ class Crowd_Fundraiser_Campaign_Controller {
         //delete_transient( 'cause_id_error' );
 
         Crowd_Fundraiser_Log::echo_admin($notice);
+
+	}
+
+	public function get_payment_button($campaign_id) {
+
+
 
 	}
 

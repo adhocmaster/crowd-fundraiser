@@ -37,6 +37,10 @@ class Crowd_Fundraiser_Activator {
 
 		Crowd_Fundraiser_Custom_Post::register();
 
+		// Setup pages
+
+		Crowd_Fundraiser_Page_Controller::setup_pages();
+
 		// Clear the permalinks after the post types has been registered
     	flush_rewrite_rules();
 

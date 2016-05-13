@@ -174,7 +174,9 @@ class Crowd_Fundraiser {
 
 		$this->loader->add_action( 'init', 'Crowd_Fundraiser_Custom_Post', 'register' );
 
-		$campaign_controller = new Crowd_Fundraiser_Campaign_Controller($this->loader);
+		$campaign_controller = Crowd_Fundraiser_Campaign_Controller::get_instance($this->loader);
+
+		$page_controller = Crowd_Fundraiser_Page_Controller::get_instance($this->loader);
 
 
 
