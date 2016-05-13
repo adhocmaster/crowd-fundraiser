@@ -12,6 +12,8 @@
  * @subpackage Crowd_Fundraiser/public/partials
  */
 
+
+
 $html="<div class='payment-method'>
-			<a href=''><img src='" . CROWD_FUNDRAISER_URL . "assets/paypal.jpg'></a>
+			<a href='". esc_url( add_query_arg('payment_method', 'paypal') ) ."'><img src='" . CROWD_FUNDRAISER_URL . "assets/paypal.jpg'></a>
 		</div>";

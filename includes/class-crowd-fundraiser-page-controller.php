@@ -28,6 +28,8 @@ class Crowd_Fundraiser_Page_Controller {
 	protected $loader;
 	private static $instance = null;
 
+	private $query_vars = array('payment_method');
+
 
 	/**
 	 * The loader that's responsible for maintaining and registering all hooks that power
@@ -91,6 +93,8 @@ class Crowd_Fundraiser_Page_Controller {
 
 		$this->loader->add_filter( 'the_content', $this, 'render_pages' );
 
+		$this->loader->add_filter( 'query_vars', $this, 'register_query_vars' );
+
 	}
 
 	/**
@@ -107,8 +111,9 @@ class Crowd_Fundraiser_Page_Controller {
 
         // Setup custom vars
 
-        $slug = 'crowd-fundraiser-payment-method';
-        $title = 'Select Payment Method';
+        $slug = 'crowd-fundraiser-payment-process';
+        $title = __('Payment Process
+        	', CROWD_FUNDRAISER_TEXT_DOMAIN);
 
         // Check if page exists, if not create it
         if ( null == get_page_by_title( $title )) {
@@ -135,6 +140,8 @@ class Crowd_Fundraiser_Page_Controller {
 
                 update_post_meta( $post_id, Crowd_Fundraiser_Page_Controller::PAMYMENT_METHOD_SETTING, Crowd_Fundraiser_Page_Controller::PAMYMENT_METHOD_SETTING . '_template.php' );
 
+                update_post_meta( $post_id, '_wp_page_template', 'default');
+
                 //set options
 
                 update_option(Crowd_Fundraiser_Page_Controller::PAMYMENT_METHOD_SETTING, $post_id); 
@@ -144,6 +151,24 @@ class Crowd_Fundraiser_Page_Controller {
 
 	}
 
+
+	/**
+	 * We need to register query vars that we are adding to the links
+	 *
+	 * @since    1.0.0
+	 */
+
+	public function register_query_vars($vars) {
+
+		//return $this->query_vars;
+
+		$vars = array_merge($vars, $this->query_vars);
+
+		// var_dump($vars);
+
+		return $vars;
+
+	}
 
 	/**
 	 * Hooked into wordpress the_content for all pages needed. 
@@ -171,7 +196,44 @@ class Crowd_Fundraiser_Page_Controller {
 
 	public function render_payment_method_page($content) {
 
-		require_once(CROWD_FUNDRAISER_PATH . 'public/partials/payment_methods.php');
+		$payment_method = get_query_var('payment_method', false);
+
+		var_dump($payment_method);
+
+		$nonce_name = 'Kudh__et3';
+		$nonce_action = 'donor_info_form';
+
+		// order step 1
+
+		if(false === $payment_method) {
+
+			require_once(CROWD_FUNDRAISER_PATH . 'public/partials/payment_methods.php');
+
+		} else if( ! isset( $_POST['donor_info_submitted'] ) ) {
+
+			//$nonce = wp_create_nonce($nonce_action);
+
+			require_once(CROWD_FUNDRAISER_PATH . 'public/partials/donor_info.php');
+
+		} else {
+
+
+			//verify nonce first
+
+			$nonce = $_REQUEST[$nonce_name];
+
+			if ( ! wp_verify_nonce( $nonce, $nonce_action ) ) {
+
+			    // This nonce is not valid.
+			    $html = 'Security check failed'; 
+
+			} else {
+
+			    // validate form data first
+
+			}
+
+		}
 
 		return $content . $html;
 
