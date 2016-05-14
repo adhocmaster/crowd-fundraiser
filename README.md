@@ -42,7 +42,7 @@ For reference, [here's a discussion](http://make.wordpress.org/themes/2013/03/04
 
 # Credits
 
-The WordPress Crowd Fundraiser was started in 2016 by [AdhocMaster](https://adhocmaster.wordpress.com/) and has since included a number of great contributions. 
+The WordPress Crowd Fundraiser was started in 2016 by [AdhocMaster](https://adhocmaster.wordpress.com/) and has since included a number of great contributions from Paajaf.org. 
 
 ## Documentation, FAQs, and More
 

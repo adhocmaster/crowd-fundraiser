@@ -120,6 +120,12 @@ class Adhocmaster_Cart {
 
 	}
 
+	public function __set( $name, $val ) {
+
+		$this->$name = $val; // is this okay?
+
+	}
+
 	public function __construct($post_id = 0) {
 
 		if( $post_id >0 ) {
@@ -141,9 +147,16 @@ class Adhocmaster_Cart {
 
 	public function save() {
 
+		//validate data?
+
+		$reverse_map = array_flip( self::$map );
+
 		if( $this->ID > 0 ) {
 
 			//update
+			
+
+
 
 		} else {
 
