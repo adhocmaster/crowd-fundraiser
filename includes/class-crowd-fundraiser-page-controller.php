@@ -213,6 +213,17 @@ class Crowd_Fundraiser_Page_Controller {
 
 			//$nonce = wp_create_nonce($nonce_action);
 
+			$current_user = wp_get_current_user();
+
+			if( $current_user->ID > 0 ) {
+
+				//populate donor info from previous data
+
+				if( ! current_user_can( 'create_users' ) ) {
+
+				}
+			}
+
 			require_once(CROWD_FUNDRAISER_PATH . 'public/partials/donor_info.php');
 
 		} else {
