@@ -25,9 +25,24 @@ class Adhocmaster_Cart_Test extends WP_UnitTestCase {
 
     	$cart->address = '';
 
+
     	print_r($cart);
 
-    	echo $cart->debug();
+    	// echo $cart->debug();
+
+    	echo $cart->save();
+
+    	echo "after save";
+
+    	print_r($cart);
+
+
+
+    	echo $cart->ID;
+
+    	echo "after accessing ID";
+
+    	print_r($cart);
 
     }
 }

@@ -22,15 +22,6 @@
  */
 class Adhocmaster_Cart {
 
-	/**
-	 * Short Description. (use period)
-	 *
-	 * Long Description.
-	 *
-	 * @since    1.0.0
-	 */
-	public $ID = 0;
-
 
 	/**
 	 * Map between cart model and post model
@@ -41,11 +32,13 @@ class Adhocmaster_Cart {
 	 * @since    1.0.0
 	 */
 
+	protected static $post_type = 'adhocmaster_cart';
+
 	protected static $map = array( 
 		
 		'order_id' 		=> 'post_parent',
 		'amount' 		=> 'menu_order',
-		'currency_code' => 'ping_status',
+		'currency_code' => 'pinged',
 		'message'		=> 'post_title',
 		'txn_id'		=> 'post_password',
 		'payer_id'		=> 'post_author',
@@ -74,35 +67,35 @@ class Adhocmaster_Cart {
 	 */
 	public function __get($name) {
 
-		if(isset($this->data[$name])) {
+		if( isset( $this->data[$name] ) ) {
 
 			return $this->data[$name];
 
 		}
 
-		if(in_array($name, $map)) {
+		if( in_array( $name, self::$map ) ) {
 
-			$this->data[$name] = $wp_post[$map[$name]];
+			$this->data[$name] = $this->wp_post[self::$map[$name]];
 
-			return $wp_post[$map[$name]];
+			return $this->wp_post[self::$map[$name]];
 
 		}
 
 		$post_key = 'post_' . $name;
 
-		if( array_key_exists( $post_key, $wp_post ) ) {
+		if( array_key_exists( $post_key, $this->wp_post ) ) {
 
-			$this->data[$name] = $wp_post[$post_key];
+			$this->data[$name] = $this->wp_post[$post_key];
 
-			return $wp_post[$post_key];
+			return $this->wp_post[$post_key];
 
 		}
 
-		if ( array_key_exists( $name, $wp_post ) ) {
+		if ( array_key_exists( $name, $this->wp_post ) ) {
 
-			$this->data[$name] = $wp_post[$name];
+			$this->data[$name] = $this->wp_post[$name];
 
-			return $wp_post[$name];
+			return $this->wp_post[$name];
 
 		}
 
@@ -136,9 +129,9 @@ class Adhocmaster_Cart {
 	 */
 	public function __construct($post_id = 0) {
 
-		if( $post_id >0 ) {
+		if( $post_id > 0 ) {
 
-			//load $wp_post and forget everything
+			//load $this->wp_post and forget everything
 
 			$this->wp_post = get_post( $post_id, ARRAY_A );
 
@@ -147,7 +140,11 @@ class Adhocmaster_Cart {
 
 		} else {
 
+
+
 			$this->data = array( 'ID' => 0);
+
+			$this->status = 'payment_waiting';
 
 		}
 
@@ -217,7 +214,13 @@ class Adhocmaster_Cart {
 
 			$post_arr['ID'] = $this->ID;
 
+		} else {
+
+			$post_arr['post_type'] = self::$post_type;
+
 		}
+
+		print_r($post_arr);
 
 		$post_id = wp_insert_post( $post_arr, true );		
 
@@ -235,7 +238,27 @@ class Adhocmaster_Cart {
 
 		}
 
+		$this->ID =$post_id;
+
+		$this->refresh_from_db();
+
 		return $post_id;
+
+	}
+
+	public function refresh_from_db() {
+
+		// print_r($this);
+
+		if( $this->ID >0 ) {
+
+			$this->wp_post = get_post( $this->ID, ARRAY_A);
+
+			// print_r($this->wp_post);
+
+		}
+
+		$this->data = array();		
 
 	}
 
@@ -244,7 +267,7 @@ class Adhocmaster_Cart {
 		$debug = print_r($this->data, true);
 
 		$debug .= print_r($this->wp_post, true);
-		
+
 		return $debug;
 
 	}
