@@ -53,7 +53,8 @@ class Adhocmaster_Cart {
 		'address'		=> 'post_content',
 		'guest_info'	=> 'post_excerpt',
 		'date_added'	=> 'post_date',
-		'date_completed'=> 'post_modified'
+		'date_completed'=> 'post_modified',
+		'status'		=> 'post_status'
 
 		);
 
@@ -61,13 +62,6 @@ class Adhocmaster_Cart {
 
 	protected $data;
 
-	// public $amount;
-
-	// public $currency_code;
-
-	// public $status;
-
-	// public $date;
 
 	protected $wp_post;
 
@@ -120,12 +114,26 @@ class Adhocmaster_Cart {
 
 	}
 
+	/**
+	 * Magic function to access data from a post row
+	 *
+	 * Long Description.
+	 *
+	 * @since    1.0.0
+	 */
 	public function __set( $name, $val ) {
 
 		$this->$name = $val; // is this okay?
 
 	}
 
+	/**
+	 * create new object, optionally from database
+	 *
+	 * Long Description.
+	 *
+	 * @since    1.0.0
+	 */
 	public function __construct($post_id = 0) {
 
 		if( $post_id >0 ) {
@@ -145,17 +153,35 @@ class Adhocmaster_Cart {
 
 	}
 
+	/**
+	 * Saves object data into database
+	 *
+	 * Long Description.
+	 *
+	 * @since    1.0.0
+	 */
 	public function save() {
 
 		//validate data?
 
 		$reverse_map = array_flip( self::$map );
 
+		//we save only mapped fields
+		$post_arr = array();
+
+		foreach ($this as $key => $value) {
+
+			if(in_array($key, $reverse_map)) {
+				
+			}
+
+		}
+
+
 		if( $this->ID > 0 ) {
 
 			//update
 			
-
 
 
 		} else {
