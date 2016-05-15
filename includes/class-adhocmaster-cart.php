@@ -123,7 +123,7 @@ class Adhocmaster_Cart {
 	 */
 	public function __set( $name, $val ) {
 
-		$this->$name = $val; // is this okay?
+		$this->data[$name] = $val;
 
 	}
 
@@ -164,31 +164,88 @@ class Adhocmaster_Cart {
 
 		//validate data?
 
-		$reverse_map = array_flip( self::$map );
+		// $reverse_map = array_flip( self::$map );
 
 		//we save only mapped fields
+		
 		$post_arr = array();
 
-		foreach ($this as $key => $value) {
+		foreach ( $this->data as $key => $value ) {
 
-			if(in_array($key, $reverse_map)) {
-				
+			if( isset( self::$map[$key] ) ) {
+
+				$post_arr[self::$map[$key]] = $value;
+
 			}
 
 		}
 
+		$errorText = '';
+
+		// if( $this->ID > 0 ) {
+
+		// 	//update
+
+		// 	$post_arr['ID'] = $this->ID;
+
+		// 	$post_id = wp_update_post( $post_arr, true );		
+
+		// 	if ( is_wp_error($post_id) ) {
+
+		// 		$errors = $post_id->get_error_messages();
+
+		// 		foreach ($errors as $error) {
+
+		// 			$$errorText .= $error;
+
+		// 		}
+
+		// 		return $errorText;
+
+		// 	}
+						
+
+
+		// } else {
+
+		// 	//insert
+
+		// }
+
 
 		if( $this->ID > 0 ) {
 
-			//update
-			
-
-
-		} else {
-
-			//insert
+			$post_arr['ID'] = $this->ID;
 
 		}
+
+		$post_id = wp_insert_post( $post_arr, true );		
+
+		if ( is_wp_error($post_id) ) {
+
+			$errors = $post_id->get_error_messages();
+
+			foreach ($errors as $error) {
+
+				$$errorText .= $error;
+
+			}
+
+			return $errorText;
+
+		}
+
+		return $post_id;
+
+	}
+
+	public function debug() {
+
+		$debug = print_r($this->data, true);
+
+		$debug .= print_r($this->wp_post, true);
+		
+		return $debug;
 
 	}
 

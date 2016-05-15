@@ -7,7 +7,7 @@ require_once CROWD_FUNDRAISER_PATH . 'includes/' . 'constants.php';
 
 function crowd_fundraiser_autoloader($class_name) {
 
-	if( false !== strpos($class_name, 'Crowd_Fundraiser') ) {
+	if( false !== strpos($class_name, 'Crowd_Fundraiser') || false !== strpos($class_name, 'Adhocmaster')   ) {
 
 		$class_filename = 'class-' . strtolower(str_replace('_', '-', $class_name)) . '.php';
 
