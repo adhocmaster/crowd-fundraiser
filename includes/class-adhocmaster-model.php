@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Cart model
+ * Blank Class
  *
  * @link       https://github.com/adhocmaster/crowd-fundraiser
  * @since      1.0.0
@@ -11,7 +11,7 @@
  */
 
 /**
- * Fired during plugin activation.
+ * A data entity which is saved in post table of wordpress
  *
  * This class defines all code necessary to run during the plugin's activation.
  *
@@ -20,7 +20,8 @@
  * @subpackage Crowd_Fundraiser/includes
  * @author     AdhocMaster <adhocmaster@live.com>
  */
-class Adhocmaster_Cart {
+class Adhocmaster_Model {
+
 
 
 	/**
@@ -28,8 +29,8 @@ class Adhocmaster_Cart {
 	 *
 	 * @since    1.0.0
 	 */
-	protected static $post_type = 'adhocmaster_cart';
 
+	protected static $post_type = 'adhocmaster_model';
 
 	/**
 	 * Map between cart model and post model
@@ -62,6 +63,7 @@ class Adhocmaster_Cart {
 	 *
 	 * @since    1.0.0
 	 */
+
 	protected $data;
 
 
@@ -70,6 +72,7 @@ class Adhocmaster_Cart {
 	 *
 	 * @since    1.0.0
 	 */
+
 
 	protected $wp_post;
 
