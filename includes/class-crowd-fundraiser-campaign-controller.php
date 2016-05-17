@@ -79,6 +79,7 @@ class Crowd_Fundraiser_Campaign_Controller {
 
 		add_action( 'save_post', array($this,'save_post_meta'), 10, 3); // Do not change signature. Remove actions is called with same signature
 
+
 	}
 
 	/**
@@ -91,6 +92,7 @@ class Crowd_Fundraiser_Campaign_Controller {
 	private function define_public_hooks() {
 
 		// $campaign_controller = new Crowd_Fundraiser_Campaign_Controller($this->loader);
+		$this->loader->add_filter( 'the_content', $this, 'render_post' );
 
 
 
@@ -243,7 +245,7 @@ class Crowd_Fundraiser_Campaign_Controller {
 	}
 
 	/**
-	 * Short Description. (use period)
+	 * Shows admin notice
 	 *
 	 * Long Description.
 	 *
@@ -262,8 +264,47 @@ class Crowd_Fundraiser_Campaign_Controller {
 
 	public function get_payment_button($campaign_id) {
 
+		// get payment page url first
 
+		$payment_page_url = Crowd_Fundraiser_Page_Controller::get_instance()->get_page_link_by_setting( Crowd_Fundraiser_Page_Controller::PAMYMENT_PAGE_SETTING );
+
+		if ( false === $payment_page_url ) {
+
+			return __( 'payment page not configured', CROWD_FUNDRAISER_TEXT_DOMAIN );
+
+		}
+
+		require_once CROWD_FUNDRAISER_PATH . 'public/partials/payment_button.php';
+
+		// var_dump($html);
+
+		return $html;
 
 	}
+
+	/**
+	 * Shows admin notice
+	 *
+	 * Long Description.
+	 *
+	 * @since    1.0.0
+	 */
+
+	public function render_post($content) {
+
+		$post = get_post();
+
+		// var_dump($post);
+
+		if ( $post->post_type == Crowd_Fundraiser_Campaign::CUSTOM_POST_TYPE ) {
+
+			$content .= $this->get_payment_button( $post->ID );
+
+		}
+
+		return $content;
+
+	}
+
 
 }

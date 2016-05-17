@@ -27,6 +27,8 @@ class Adhocmaster_Cart_Test extends WP_UnitTestCase {
 
     	$cart->payer_id = 1;
 
+    	$cart->gateway = 'offline';
+
 
     	$raw_clone = clone $cart;
 
@@ -71,6 +73,8 @@ class Adhocmaster_Cart_Test extends WP_UnitTestCase {
     	$this->assertEquals($new_cart->amount, $raw_clone->amount);
     	$this->assertEquals($new_cart->order_id, $raw_clone->order_id);
     	$this->assertEquals($new_cart->address, $raw_clone->address);
+    	$this->assertEquals($new_cart->payer_id, $raw_clone->payer_id);
+    	$this->assertEquals($new_cart->gateway, $raw_clone->gateway);
 
     }
 }

@@ -53,7 +53,8 @@ class Adhocmaster_Cart {
 		'guest_info'	=> 'post_excerpt',
 		'date_added'	=> 'post_date',
 		'date_completed'=> 'post_modified',
-		'status'		=> 'post_status'
+		'status'		=> 'post_status',
+		'gateway'		=> 'post_mime_type'
 
 		);
 
@@ -165,6 +166,8 @@ class Adhocmaster_Cart {
 
 			$this->status = 'payment_waiting';
 
+			$this->admin_id = get_current_user_id();
+
 		}
 
 	}
@@ -236,7 +239,7 @@ class Adhocmaster_Cart {
 
 		}
 
-		$this->ID =$post_id;
+		$this->ID = $post_id;
 
 		$this->refresh_from_db();
 

@@ -23,12 +23,26 @@
 class Crowd_Fundraiser_Page_Controller {
 
 
-	const PAMYMENT_METHOD_SETTING = 'cf_payment_method_page';
+	/**
+	 * setting name for payment page. By default a page is created which can be changed by user if needed.
+	 *
+	 * @since    1.0.0
+	 */
+
+	const PAMYMENT_PAGE_SETTING = 'cf_payment_method_page';
 
 	protected $loader;
+
 	private static $instance = null;
 
-	private $query_vars = array('payment_method');
+	private $public_errors = array();
+
+	/**
+	 * query vars for payment page.
+	 *
+	 * @since    1.0.0
+	 */
+	private $query_vars = array( 'payment_method', 'cart_id', 'campaign_id' );
 
 
 	/**
@@ -91,6 +105,11 @@ class Crowd_Fundraiser_Page_Controller {
 
 		// $campaign_controller = new Crowd_Fundraiser_Campaign_Controller($this->loader);
 
+
+		// we will process all the data in template_redirect so that we can redirect if needed
+
+		$this->loader->add_filter( 'template_redirect', $this, 'process_data' );
+
 		$this->loader->add_filter( 'the_content', $this, 'render_pages' );
 
 		$this->loader->add_filter( 'query_vars', $this, 'register_query_vars' );
@@ -138,16 +157,31 @@ class Crowd_Fundraiser_Page_Controller {
 
             } else {
 
-                update_post_meta( $post_id, Crowd_Fundraiser_Page_Controller::PAMYMENT_METHOD_SETTING, Crowd_Fundraiser_Page_Controller::PAMYMENT_METHOD_SETTING . '_template.php' );
+                update_post_meta( $post_id, Crowd_Fundraiser_Page_Controller::PAMYMENT_PAGE_SETTING, Crowd_Fundraiser_Page_Controller::PAMYMENT_PAGE_SETTING . '_template.php' );
 
                 update_post_meta( $post_id, '_wp_page_template', 'default');
 
                 //set options
 
-                update_option(Crowd_Fundraiser_Page_Controller::PAMYMENT_METHOD_SETTING, $post_id); 
+                update_option(Crowd_Fundraiser_Page_Controller::PAMYMENT_PAGE_SETTING, $post_id); 
 
             }
         } // end check if
+
+	}
+
+	public function get_page_link_by_setting( $setting ) {
+
+
+		$page_id = get_option( $setting, 0 );
+
+		if ( $page_id < 1 ) {
+
+			return false;
+
+		}
+
+		return get_page_link( $page_id );
 
 	}
 
@@ -170,6 +204,106 @@ class Crowd_Fundraiser_Page_Controller {
 
 	}
 
+
+
+	/**
+	 * we will process all the data in template_redirect so that we can redirect if needed
+	 *
+	 * @since    1.0.0
+	 */
+	public function process_data() {
+
+
+		$post = get_post();
+
+
+		switch($post->ID) {
+
+			case get_option(Crowd_Fundraiser_Page_Controller::PAMYMENT_PAGE_SETTING, 0):
+
+				$this->process_data_payment_method();
+
+				break;
+
+		}
+
+	}
+
+	public function process_data_payment_method() {
+
+		$campaign_id = get_query_var('campaign_id', 0);
+
+		if( $campaign_id > 0 && isset( $_POST['donor_info_submitted'] ) ) {
+
+
+			//verify nonce first
+
+			$nonce = $_REQUEST[$nonce_name];
+
+			if ( ! wp_verify_nonce( $nonce, $nonce_action ) ) {
+
+			    // This nonce is not valid.
+			    $this->public_errors[] = __( 'Security check failed', CROWD_FUNDRAISER_TEXT_DOMAIN ); 
+
+			    return;
+
+			} 
+
+			//create a cart and redirect
+
+			// var_dump($_POST);
+
+			// exit();
+
+			$address['d_billing_address'] = sanitize_text_field( $_POST['d_billing_address'] );
+			$address['d_billing_city'] = sanitize_text_field( $_POST['d_billing_city'] );
+			$address['d_billing_state'] = sanitize_text_field( $_POST['d_billing_state'] );
+			$address['d_billing_country'] = sanitize_text_field( $_POST['d_billing_country'] );
+
+
+			$guest_info['d_name'] = sanitize_text_field( $_POST['d_name'] );
+			$guest_info['d_email'] = sanitize_text_field( $_POST['d_email'] );
+			$guest_info['d_password'] = sanitize_text_field( $_POST['d_password'] );
+
+			$user_id = get_current_user_id();
+
+			$cart = new Adhocmaster_Cart();
+
+			$cart->guest_info = serialize($_POST);
+
+			$cart->payer_id = $user_id;
+
+			$cart->order_id = $campaign_id;
+
+			$cart->address = serialize($address);
+
+			$cart->message = sanitize_text_field( $_POST['d_message'] );
+
+			$cart_id = $cart->save();
+
+			// die( var_dump($cart) );
+
+			if( is_numeric( $cart_id ) ) {
+
+				$payment_page_url = $this->get_page_link_by_setting( Crowd_Fundraiser_Page_Controller::PAMYMENT_PAGE_SETTING );
+
+				setcookie( 'cart_id', $cart_id, 24 * 3600, '/' );
+
+				wp_redirect( add_query_arg( 'cart_id', $cart_id, $payment_page_url ) );
+
+			}
+
+			$this->public_errors[] = __( 'Failed to create cart', CROWD_FUNDRAISER_TEXT_DOMAIN );
+
+			return;
+
+		}
+
+		//process anything else, payment gateway calls or other things
+
+
+	}
+
 	/**
 	 * Hooked into wordpress the_content for all pages needed. 
 	 *
@@ -182,7 +316,7 @@ class Crowd_Fundraiser_Page_Controller {
 
 		switch($post->ID) {
 
-			case get_option(Crowd_Fundraiser_Page_Controller::PAMYMENT_METHOD_SETTING, 0):
+			case get_option(Crowd_Fundraiser_Page_Controller::PAMYMENT_PAGE_SETTING, 0):
 
 				$content = $this->render_payment_method_page($content);
 
@@ -196,53 +330,52 @@ class Crowd_Fundraiser_Page_Controller {
 
 	public function render_payment_method_page($content) {
 
+
+		$campaign_id = get_query_var('campaign_id', 0);
+
 		$payment_method = get_query_var('payment_method', false);
 
-		var_dump($payment_method);
+		$cart_id = get_query_var('cart_id', 0);
+
+		// var_dump($payment_method);
+
+		// var_dump($campaign_id);
+
+		// var_dump($cart_id);
 
 		$nonce_name = 'Kudh__et3';
 		$nonce_action = 'donor_info_form';
 
 		// order step 1
 
-		if(false === $payment_method) {
-
-			require_once(CROWD_FUNDRAISER_PATH . 'public/partials/payment_methods.php');
-
-		} else if( ! isset( $_POST['donor_info_submitted'] ) ) {
+		if ( $campaign_id > 0  && ! isset( $_POST['donor_info_submitted'] ) ) {
 
 			//$nonce = wp_create_nonce($nonce_action);
 
-			$current_user = wp_get_current_user();
+			// $current_user = wp_get_current_user();
 
-			if( $current_user->ID > 0 ) {
+			// if( $current_user->ID > 0 ) {
 
-				//populate donor info from previous data
+			// 	//populate donor info from previous data
 
-				if( ! current_user_can( 'create_users' ) ) {
+			// 	if( ! current_user_can( 'create_users' ) ) {
 
-				}
-			}
+			// 	}
+			// }
 
-			require_once(CROWD_FUNDRAISER_PATH . 'public/partials/donor_info.php');
+			require_once CROWD_FUNDRAISER_PATH . 'public/partials/donor_info.php';
+
+		} elseif ( 0 == $cart_id ) {
+
+			$html = __( 'No cart chosen.', CROWD_FUNDRAISER_TEXT_DOMAIN );
+
+		} elseif (false === $payment_method) {
+
+			require_once(CROWD_FUNDRAISER_PATH . 'public/partials/payment_methods.php');
 
 		} else {
 
 
-			//verify nonce first
-
-			$nonce = $_REQUEST[$nonce_name];
-
-			if ( ! wp_verify_nonce( $nonce, $nonce_action ) ) {
-
-			    // This nonce is not valid.
-			    $html = 'Security check failed'; 
-
-			} else {
-
-			    // validate form data first
-
-			}
 
 		}
 

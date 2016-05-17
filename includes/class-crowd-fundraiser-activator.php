@@ -61,19 +61,19 @@ class Crowd_Fundraiser_Activator {
 
 		}
 
-		global $wpdb;
+		// global $wpdb;
 		
-		$charset_collate = $wpdb->get_charset_collate();
+		// $charset_collate = $wpdb->get_charset_collate();
 
-		$sql = "
-			CREATE TABLE {$wpdb->prefix}donor (
-			) $charset_collate;
+		// $sql = "
+		// 	CREATE TABLE {$wpdb->prefix}donor (
+		// 	) $charset_collate;
 			
 		
-		";
+		// ";
 
-		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
-		dbDelta( $sql );
+		// require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
+		// dbDelta( $sql );
 
 
 

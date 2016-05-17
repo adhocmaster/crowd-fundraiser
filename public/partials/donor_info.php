@@ -15,6 +15,8 @@
 
 require_once( CROWD_FUNDRAISER_PATH . 'includes/country_codes.php' );
 
+require_once( 'error.php' );
+
 $country_options = '';
 
 foreach ($countries as $key => $value) {
@@ -23,8 +25,9 @@ foreach ($countries as $key => $value) {
 
 }
 
-$html="<div class='payment-method'>
-			<form>
+$html =	$errorHtml .
+		"<div class='payment-method'>
+			<form method='post' action=''>
 
 			  <h2>Your info:</h2>
 
@@ -41,6 +44,7 @@ $html="<div class='payment-method'>
 			  <div class='form-group'>
 			    <label for='d_password'>Password</label>
 			    <input type='password' class='form-control' id='d_password' placeholder='Password' name='d_password'>
+			    <p class='help-block'>Leave blank if you already have an account or don't want to create an account</p>
 			  </div>
 
 			  <h2>Billing Address:</h2>
@@ -57,7 +61,7 @@ $html="<div class='payment-method'>
 
 			  <div class='form-group'>
 			    <label for='d_billing_state'></label>
-			    <input type='text' class='form-control' id='d_billing_state' placeholder='City' name='d_billing_state'>
+			    <input type='text' class='form-control' id='d_billing_state' placeholder='State' name='d_billing_state'>
 			  </div>
 
 			  <div class='form-group'>
@@ -70,7 +74,14 @@ $html="<div class='payment-method'>
 				</select>
 			  </div>
 
+			  <div class='form-group'>
+			    <label for='d_message'>Message</label>
+			    <textarea class='form-control' rows='3' id='d_message' placeholder='A nice but optional message' name='d_message'></textarea>
+			  </div>
+
 			  ". wp_nonce_field($nonce_action, $nonce_name)."
+
+			  <input type='hidden' name='donor_info_submitted' value='submitted' />
 
 			  <button type='submit' class='button submit-button btn-submit btn btn-default'>Submit</button>
 			</form>
