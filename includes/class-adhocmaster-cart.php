@@ -34,8 +34,11 @@ class Adhocmaster_Cart extends Adhocmaster_Model{
 	/**
 	 * Map between cart model and post model
 	 *
-	 * @var admin_id is set when cart made by an admin in lieu of another account or person. In case of a person who is not an user, 
+	 * @var array $map map from object properties to post table fields
+	 *
+	 * admin_id is set when cart made by an admin in lieu of another account or person. In case of a person who is not an user, 
 	 * payer_id is 0. post name has a index, so, it's used. As usually index is not create for 3 or less charactersm we will save data as admin-ID
+	 * amount is given in cents (*100 to actual ammount). No decimal numbers. Only integers
 	 *
 	 * @since    1.0.0
 	 */
@@ -61,10 +64,11 @@ class Adhocmaster_Cart extends Adhocmaster_Model{
 	protected static $required_fields = array(
 
 		'order_id',
-		'status'
+		'status',
+		'amount',
+		'currency_code'
 
 	);
-
 
 	/**
 	 * create new object, optionally from database
@@ -125,16 +129,23 @@ class Adhocmaster_Cart extends Adhocmaster_Model{
 
 	}
 
+	/**
+	 * Validates data before save
+	 *
+	 * Long Description.
+	 *
+	 * @since    1.0.0
+	 */
 
 	public function validate() {
 
 		$core_validation = parent::validate();
 
-		$error_fields = $core_validation->get_error_codes();
-
 		$errors = new WP_Error();
 
-		if ( ! empty( $error_fields ) ) {
+		if ( ! empty( $core_validation->errors ) ) {
+
+			$error_fields = $core_validation->get_error_codes();
 
 			foreach( $error_fields as $field ) {
 
@@ -164,15 +175,57 @@ class Adhocmaster_Cart extends Adhocmaster_Model{
 
 		}
 
-		$error_codes = $errors->get_error_codes();
 
-		if ( ! empty( $error_codes ) ) {
+		if ( ! empty( $errors->errors ) ) {
 
 			return $errors;
 
 		}
 
 		return true;
+
+	}
+
+
+	/**
+	 * accepts payment
+	 * This is a API method for payment gateways. They call it after validating payments. this function does not validate payment. Payment gateway must validate their data first
+	 ** 
+	 * @api
+	 * @return cart_id on success, WP_Error object on failure.
+	 * @since    1.0.0
+	 */
+
+	public function accept_payment($amount, $gateway = 'offline', $currency_code) {
+
+		// payment validation
+
+		$errors = new WP_Error();
+
+		if( $this->amount != $amount * 100 ) {
+
+			$errors->add( 'amount', __( 'Amounts do not match', Adhocmaster_Model::TEXT_DOMAIN ) );
+
+		}
+
+		if( $this->currency_code != $currency_code ) {
+
+			$errors->add( 'amount', __( 'Currency codes do not match', Adhocmaster_Model::TEXT_DOMAIN ) );
+
+		}
+
+		if( ! empty( $errors->errors ) ){
+
+			return $errors;
+
+		}
+
+		$this->status = 'payment_accepted';
+
+		$this->gateway = $gateway;
+
+		return $this->save();
+
 
 	}
 

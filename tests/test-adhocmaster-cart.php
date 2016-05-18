@@ -19,9 +19,9 @@ class Adhocmaster_Cart_Test extends WP_UnitTestCase {
 
     	$cart->currency_code = '$';
 
-    	$cart->amount = 55*100;
+    	$cart->amount = 55 * 100;
 
-    	// $cart->order_id = 1;
+    	$cart->order_id = 1;
 
     	$cart->address = 'My address';
 
@@ -73,6 +73,8 @@ class Adhocmaster_Cart_Test extends WP_UnitTestCase {
 
     	print_r($raw_clone);
     	print_r($new_cart);
+
+        echo "amount is " . $new_cart->amount;
 
 
     	$this->assertEquals($new_cart->ID, $cart->ID);

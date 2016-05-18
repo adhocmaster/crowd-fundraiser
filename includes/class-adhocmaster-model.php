@@ -39,7 +39,8 @@ class Adhocmaster_Model {
 	 * Fields not in this map is save in post_meta table. Do not use 'post' prefix in data fields as it will try to pull from table. You may need to sanitize meta data. Must be overriden
 	 * ID field is kept as convention.
 	 * you can save unlimited fields without declaring the field names in the map. Those will be saved as post meta data. Make sure they don't have 'post_' prefix
-	 *
+	 * 
+	 * @var array $map map from object properties to post table fields
 	 * @since    1.0.0
 	 */
 
@@ -170,7 +171,7 @@ class Adhocmaster_Model {
 	}
 
 	/**
-	 * Magic function to access data from a post row
+	 * Magic function to set data (does not update in db)
 	 *
 	 * Long Description.
 	 *
