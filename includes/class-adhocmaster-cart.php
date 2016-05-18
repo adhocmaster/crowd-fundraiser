@@ -20,7 +20,7 @@
  * @subpackage Crowd_Fundraiser/includes
  * @author     AdhocMaster <adhocmaster@live.com>
  */
-class Adhocmaster_Cart {
+class Adhocmaster_Cart extends Adhocmaster_Model{
 
 
 	/**
@@ -56,87 +56,15 @@ class Adhocmaster_Cart {
 		'status'		=> 'post_status',
 		'gateway'		=> 'post_mime_type'
 
-		);
+	);
 
-	/**
-	 *  used for saving and manipulating data> Lazily loaded when accessed from post data.
-	 *
-	 * @since    1.0.0
-	 */
-	protected $data;
+	protected static $required_fields = array(
 
+		'order_id',
+		'status'
 
-	/**
-	 *  original post array.
-	 *
-	 * @since    1.0.0
-	 */
+	);
 
-	protected $wp_post;
-
-	/**
-	 * Magic function to access data from a post row
-	 *
-	 * Long Description.
-	 *
-	 * @since    1.0.0
-	 */
-	public function __get($name) {
-
-		// print_r('get called with: ' . $name);
-
-		if( isset( $this->data[$name] ) ) {
-
-			return $this->data[$name];
-
-		}
-
-		if( array_key_exists( $name, self::$map ) ) {
-
-			$this->data[$name] = $this->wp_post[self::$map[$name]];
-
-			return $this->data[$name];
-
-		}
-
-		$post_key = 'post_' . $name;
-
-		if( array_key_exists( $post_key, $this->wp_post ) ) {
-
-			$this->data[$name] = $this->wp_post[$post_key];
-
-			return $this->wp_post[$post_key];
-
-		}
-
-		if ( array_key_exists( $name, $this->wp_post ) ) {
-
-			$this->data[$name] = $this->wp_post[$name];
-
-			return $this->wp_post[$name];
-
-		}
-
-		//search meta
-
-		$this->data[$name] = get_post_meta( $this->ID, $name, true ); //true is not default value, it means singular value
-
-		return $this->data[$name];
-
-	}
-
-	/**
-	 * Magic function to access data from a post row
-	 *
-	 * Long Description.
-	 *
-	 * @since    1.0.0
-	 */
-	public function __set( $name, $val ) {
-
-		$this->data[$name] = $val;
-
-	}
 
 	/**
 	 * create new object, optionally from database
@@ -147,22 +75,24 @@ class Adhocmaster_Cart {
 	 */
 	public function __construct($post_id = 0) {
 
+		parent::__construct( $post_id );
+
 		if( $post_id > 0 ) {
 
 			//load $this->wp_post and forget everything
 
-			$this->wp_post = get_post( $post_id, ARRAY_A );
+			// $this->wp_post = get_post( $post_id, ARRAY_A );
 
-			$this->data = array( 'ID' => $post_id ); //pre loaded because will be used for sure
+			// $this->data = array( 'ID' => $post_id ); //pre loaded because will be used for sure
 
 
 		} else {
 
 
 
-			$this->data = array( 'ID' => 0);
+			// $this->data = array( 'ID' => 0);
 
-			$this->wp_post = array();
+			// $this->wp_post = array();
 
 			$this->status = 'payment_waiting';
 
@@ -183,93 +113,66 @@ class Adhocmaster_Cart {
 
 		//validate data?
 
-		// $reverse_map = array_flip( self::$map );
+		$validation_errors = $this->validate();
 
-		//we save only mapped fields
-		
-		$post_arr = array();
+		if( is_wp_error( $validation_errors  ) ) {
 
-		foreach ( $this->data as $key => $value ) {
-
-			if( isset( self::$map[$key] ) ) {
-
-				$post_arr[self::$map[$key]] = $value;
-
-			}
+			return $validation_errors;
 
 		}
 
-		$errorText = '';
-
-
-		if( $this->ID > 0 ) {
-
-			$post_arr['ID'] = $this->ID;
-
-		} else {
-
-			//insert validation
-
-			if( $post_arr['post_author'] < 1 ) {
-
-
-				return "post_author cannot be empty";
-
-			}
-
-			$post_arr['post_type'] = self::$post_type;
-
-		}
-
-		// print_r($post_arr);
-
-		$post_id = wp_insert_post( $post_arr, true );		
-
-		if ( is_wp_error($post_id) ) {
-
-			$errors = $post_id->get_error_messages();
-
-			foreach ($errors as $error) {
-
-				$$errorText .= $error;
-
-			}
-
-			return $errorText;
-
-		}
-
-		$this->ID = $post_id;
-
-		$this->refresh_from_db();
-
-		return $post_id;
+		return parent::save();
 
 	}
 
-	public function refresh_from_db() {
 
-		// print_r($this);
+	public function validate() {
 
-		if( $this->ID >0 ) {
+		$core_validation = parent::validate();
 
-			$this->wp_post = get_post( $this->ID, ARRAY_A);
+		$error_fields = $core_validation->get_error_codes();
 
-			// print_r($this->wp_post);
+		$errors = new WP_Error();
+
+		if ( ! empty( $error_fields ) ) {
+
+			foreach( $error_fields as $field ) {
+
+				$errors->add( $field, sprintf( __( 'Invalid %s', Adhocmaster_Model::TEXT_DOMAIN ), $field ) );
+				# code...
+			}
 
 		}
 
-		$this->data = array();		
+		if ( $this->ID < 1 ) {
 
-	}
+			// print_r($this);
 
-	public function debug() {
+			if( ! isset( $this->data['payer_id'] ) ) {
 
-		$debug = print_r($this->data, true);
+				$this->payer_id = 0;
 
-		$debug .= print_r($this->wp_post, true);
+			}
 
-		return $debug;
+			if( $this->payer_id < 1 && $this->admin_id < 1 ) {
+
+				$errors->add( 'error', __( 'Guest checkout is disabled', Adhocmaster_Model::TEXT_DOMAIN ) );
+
+			}
+
+
+
+		}
+
+		$error_codes = $errors->get_error_codes();
+
+		if ( ! empty( $error_codes ) ) {
+
+			return $errors;
+
+		}
+
+		return true;
 
 	}
 

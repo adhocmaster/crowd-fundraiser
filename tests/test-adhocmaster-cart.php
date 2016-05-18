@@ -21,7 +21,7 @@ class Adhocmaster_Cart_Test extends WP_UnitTestCase {
 
     	$cart->amount = 55*100;
 
-    	$cart->order_id = 1;
+    	// $cart->order_id = 1;
 
     	$cart->address = 'My address';
 
@@ -29,14 +29,20 @@ class Adhocmaster_Cart_Test extends WP_UnitTestCase {
 
     	$cart->gateway = 'offline';
 
+        $cart->extra_data = 'something extra';
+
 
     	$raw_clone = clone $cart;
 
     	// print_r($cart);
 
     	// echo $cart->debug();
+        // print_r($cart);
 
-    	echo $cart->save();
+
+    	print_r( $cart->save() );
+
+        // exit();
 
     	// echo "after save";
 
@@ -48,7 +54,9 @@ class Adhocmaster_Cart_Test extends WP_UnitTestCase {
 
     	// echo "after accessing ID";
 
-    	// print_r($cart);
+        // print_r($cart);
+
+        // exit();
 
     	// echo "after doing a dummy update";
 
