@@ -167,6 +167,8 @@ class Crowd_Fundraiser_Admin {
 		if ( ! current_user_can( 'manage_options' ) )
 			wp_die( __( 'You do not have sufficient permissions to manage options for this site.' ) );
  
+		$payment_menu_slug = self::TOP_MENU_SLUG . '-payment-settings';
+
 	    // Create a header in the default WordPress 'wrap' container
 	    $html = '<div class="wrap">';
 	        $html .= '<h2>Sandbox Plugin Options</h2>';
@@ -176,7 +178,16 @@ class Crowd_Fundraiser_Admin {
 	    // Send the markup to the browser
 	    echo $html;
 
-	    do_settings_sections( self::TOP_MENU_SLUG . '-payment-settings' );
+		settings_errors();
+
+		echo "<form method='post' action='options.php'>";
+
+		settings_fields( $payment_menu_slug );
+		do_settings_sections( $payment_menu_slug );
+		submit_button();
+
+		echo '</form>';
+	    // do_settings_sections( self::TOP_MENU_SLUG . '-payment-settings' );
 
 	}
 
@@ -202,6 +213,14 @@ class Crowd_Fundraiser_Admin {
 	        array(                              
 	            'Activate this setting to display the content.'
 	        )
+	    );
+
+
+	    // Finally, we register the fields with WordPress
+	     
+	    register_setting(
+	        $payment_menu_slug,
+	        'show_content'
 	    );
 
 	}
