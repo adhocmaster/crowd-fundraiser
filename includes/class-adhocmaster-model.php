@@ -22,6 +22,11 @@
  */
 class Adhocmaster_Model {
 
+	/**
+	 * Add your plugin or theme text domain name here.
+	 *
+	 * @since    1.0.0
+	 */
 
 	const TEXT_DOMAIN = CROWD_FUNDRAISER_TEXT_DOMAIN;
 
@@ -30,8 +35,7 @@ class Adhocmaster_Model {
 	 *
 	 * @since    1.0.0
 	 */
-
-	protected static $post_type = 'adhocmaster_model';
+	const POST_TYPE = "adhocmaster_model";
 
 	/**
 	 * Map between cart model and post model. 
@@ -197,20 +201,7 @@ class Adhocmaster_Model {
 
 		if( $post_id > 0 ) {
 
-			//load $this->wp_post and forget everything
-
-			// $this->wp_post = get_post( $post_id, ARRAY_A );
-
-			// $this->data = array( 'ID' => $post_id ); //pre loaded because will be used for sure
-			// echo "why post id is an array?";
-
-			// print_r($post_id);
-
-			// print_r($this);
-
 			$this->ID = $post_id;
-
-			// print_r($this);
 
 			$this->refresh_from_db();
 
@@ -218,12 +209,9 @@ class Adhocmaster_Model {
 		} else {
 
 
-
 			$this->data = array( 'ID' => 0);
 
 			$this->wp_post = array();
-
-			$this->status = 'payment_waiting';
 
 		}
 
@@ -269,7 +257,7 @@ class Adhocmaster_Model {
 		} else {
 
 
-			$post_arr['post_type'] = static::$post_type; //dynamic binding for child classes
+			$post_arr['post_type'] = static::POST_TYPE; //dynamic binding for child classes
 
 		}
 

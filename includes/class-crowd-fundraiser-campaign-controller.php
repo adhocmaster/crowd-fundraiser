@@ -154,7 +154,7 @@ class Crowd_Fundraiser_Campaign_Controller {
 			'register_meta_box_cb' => array( $metabox, 'setup_metaboxes')
 		);
 
-		register_post_type( Crowd_Fundraiser_Campaign::CUSTOM_POST_TYPE, $args );
+		register_post_type( Crowd_Fundraiser_Campaign::POST_TYPE, $args );
 
 	}
 
@@ -177,7 +177,7 @@ class Crowd_Fundraiser_Campaign_Controller {
 
 		// exit();
 	    // If this isn't a 'campaign' post, don't update it.
-	    if ( Crowd_Fundraiser_Campaign::CUSTOM_POST_TYPE != $post->post_type ) {
+	    if ( Crowd_Fundraiser_Campaign::POST_TYPE != $post->post_type ) {
 	        return;
 	    }
 
@@ -296,7 +296,7 @@ class Crowd_Fundraiser_Campaign_Controller {
 
 		// var_dump($post);
 
-		if ( $post->post_type == Crowd_Fundraiser_Campaign::CUSTOM_POST_TYPE ) {
+		if ( $post->post_type == Crowd_Fundraiser_Campaign::POST_TYPE ) {
 
 			$content .= $this->get_payment_button( $post->ID );
 

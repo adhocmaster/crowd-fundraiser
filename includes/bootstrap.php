@@ -40,3 +40,5 @@ spl_autoload_register('crowd_fundraiser_autoloader');
  * admin-specific hooks, and public-facing site hooks.
  */
 require_once CROWD_FUNDRAISER_PATH . 'includes/class-crowd-fundraiser.php';
+
+require_once CROWD_FUNDRAISER_PATH . 'includes/class-adhocmaster-paypal.php';

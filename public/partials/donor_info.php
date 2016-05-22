@@ -29,10 +29,26 @@ $html =	$errorHtml .
 		"<div class='payment-method'>
 			<form method='post' action=''>
 
+			  <h2>Payment Info:</h2>
+
+			  <div class='form-group'>
+			    <label for='d_amount'>Amount</label>
+			    <input type='text' class='form-control' id='d_amount' placeholder='Number only' name='d_amount'>
+			  </div>
+			  <div class='form-group'>
+			    <label for='d_currency'>Currency</label>
+			    <select class='form-control' name='d_currency' id='d_currency'>
+			    	
+				  	<option value='USD'>USD</option>
+				  	<option value='EUR'>Euro</option>
+
+				</select>
+			  </div>
+
 			  <h2>Your info:</h2>
 
 			  <div class='form-group'>
-			    <label for='d_name'></label>
+			    <label for='d_name'>Name</label>
 			    <input type='text' class='form-control' id='d_name' placeholder='Full name' name='d_name'>
 			  </div>
 			  

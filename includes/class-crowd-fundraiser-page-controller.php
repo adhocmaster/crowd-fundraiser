@@ -37,12 +37,16 @@ class Crowd_Fundraiser_Page_Controller {
 
 	private $public_errors = array();
 
+	protected $nonce_name = 'Kudh__et3';
+
+	protected $nonce_action = 'donor_info_form';
+
 	/**
 	 * query vars for payment page.
 	 *
 	 * @since    1.0.0
 	 */
-	private $query_vars = array( 'payment_method', 'cart_id', 'campaign_id' );
+	private $query_vars = array( 'payment_method', 'cart_id', 'campaign_id', 'notification', 'thankyou' );
 
 
 	/**
@@ -153,7 +157,7 @@ class Crowd_Fundraiser_Page_Controller {
 
             if ( !$post_id ) {
 
-                wp_die( 'Error creating necessary pages for Crowd Fundraiser' );
+                wp_die( __( 'Error creating necessary pages for Crowd Fundraiser', CROWD_FUNDRAISER_TEXT_DOMAIN ) );
 
             } else {
 
@@ -207,12 +211,19 @@ class Crowd_Fundraiser_Page_Controller {
 
 
 	/**
-	 * we will process all the data in template_redirect so that we can redirect if needed
+	 * we will process all the data in template_redirect so that we can redirect if needed. Several hooks can be implemnented here
 	 *
 	 * @since    1.0.0
 	 */
 	public function process_data() {
 
+		/**
+		* process_data hook for payment methods to process payment. If successfull redirect to thank you page
+		*/
+
+		do_action('c_f_process_data');
+
+		// apply_filter( 'process_data_redirect', '' );
 
 		$post = get_post();
 
@@ -221,7 +232,7 @@ class Crowd_Fundraiser_Page_Controller {
 
 			case get_option(Crowd_Fundraiser_Page_Controller::PAMYMENT_PAGE_SETTING, 0):
 
-				$this->process_data_payment_method();
+				$this->process_data_cart();
 
 				break;
 
@@ -229,7 +240,12 @@ class Crowd_Fundraiser_Page_Controller {
 
 	}
 
-	public function process_data_payment_method() {
+	/**
+	 * Creates the cart with default data. Before payment method
+	 *
+	 * @since    1.0.0
+	 */
+	public function process_data_cart() {
 
 		$campaign_id = get_query_var('campaign_id', 0);
 
@@ -238,9 +254,9 @@ class Crowd_Fundraiser_Page_Controller {
 
 			//verify nonce first
 
-			$nonce = $_REQUEST[$nonce_name];
+			$nonce = $_REQUEST[$this->nonce_name];
 
-			if ( ! wp_verify_nonce( $nonce, $nonce_action ) ) {
+			if ( ! wp_verify_nonce( $nonce, $this->nonce_action ) ) {
 
 			    // This nonce is not valid.
 			    $this->public_errors[] = __( 'Security check failed', CROWD_FUNDRAISER_TEXT_DOMAIN ); 
@@ -255,6 +271,7 @@ class Crowd_Fundraiser_Page_Controller {
 
 			// exit();
 
+
 			$address['d_billing_address'] = sanitize_text_field( $_POST['d_billing_address'] );
 			$address['d_billing_city'] = sanitize_text_field( $_POST['d_billing_city'] );
 			$address['d_billing_state'] = sanitize_text_field( $_POST['d_billing_state'] );
@@ -262,14 +279,18 @@ class Crowd_Fundraiser_Page_Controller {
 
 
 			$guest_info['d_name'] = sanitize_text_field( $_POST['d_name'] );
-			$guest_info['d_email'] = sanitize_text_field( $_POST['d_email'] );
+			$guest_info['d_email'] = sanitize_email( $_POST['d_email'] );
 			$guest_info['d_password'] = sanitize_text_field( $_POST['d_password'] );
 
 			$user_id = get_current_user_id();
 
 			$cart = new Adhocmaster_Cart();
 
-			$cart->guest_info = serialize($_POST);
+			$cart->amount = number_format( floatval( $_POST['d_amount'] ), 2 ); // takes only two decimal points
+
+			$cart->currency_code = sanitize_text_field( $_POST['d_currency'] );
+
+			$cart->guest_info = serialize($guest_info);
 
 			$cart->payer_id = $user_id;
 
@@ -278,6 +299,8 @@ class Crowd_Fundraiser_Page_Controller {
 			$cart->address = serialize($address);
 
 			$cart->message = sanitize_text_field( $_POST['d_message'] );
+
+			// var_dump($cart);
 
 			$cart_id = $cart->save();
 
@@ -343,25 +366,12 @@ class Crowd_Fundraiser_Page_Controller {
 
 		// var_dump($cart_id);
 
-		$nonce_name = 'Kudh__et3';
-		$nonce_action = 'donor_info_form';
+		$nonce_name = $this->nonce_name;
+		$nonce_action = $this->nonce_action;
 
 		// order step 1
 
 		if ( $campaign_id > 0  && ! isset( $_POST['donor_info_submitted'] ) ) {
-
-			//$nonce = wp_create_nonce($nonce_action);
-
-			// $current_user = wp_get_current_user();
-
-			// if( $current_user->ID > 0 ) {
-
-			// 	//populate donor info from previous data
-
-			// 	if( ! current_user_can( 'create_users' ) ) {
-
-			// 	}
-			// }
 
 			require_once CROWD_FUNDRAISER_PATH . 'public/partials/donor_info.php';
 
@@ -371,10 +381,21 @@ class Crowd_Fundraiser_Page_Controller {
 
 		} elseif (false === $payment_method) {
 
+			$cart = new Adhocmaster_Cart($cart_id);
+
+			var_dump($cart);
+
 			require_once(CROWD_FUNDRAISER_PATH . 'public/partials/payment_methods.php');
 
 		} else {
 
+			//payment method chosen. Display cart data and show payment button
+
+			$cart = new Adhocmaster_Cart( $cart_id );
+
+			$campaign = new Crowd_Fundraiser_Campaign( $cart->order_id );
+
+			require_once(CROWD_FUNDRAISER_PATH . 'public/partials/paypal_confirmation.php');
 
 
 		}

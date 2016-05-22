@@ -20,7 +20,7 @@
  * @subpackage Crowd_Fundraiser/includes
  * @author     AdhocMaster <adhocmaster@live.com>
  */
-class Crowd_Fundraiser_Campaign {
+class Crowd_Fundraiser_Campaign extends Adhocmaster_Model {
 
 
 	/**
@@ -31,13 +31,16 @@ class Crowd_Fundraiser_Campaign {
 	 */
 
 
-	const CUSTOM_POST_TYPE = "campaign";
+	const POST_TYPE = "campaign";
 	const META_NAME_CAUSE_ID = "cause_id";
 
+	/**
+	 * Define a unique custom post type here
+	 *
+	 * @since    1.0.0
+	 */
+	protected static $post_type = 'adhocmaster_cart';
 
-	public function __construct() {
 
-
-	}
 
 }

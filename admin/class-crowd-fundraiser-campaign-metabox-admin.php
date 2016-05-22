@@ -60,7 +60,7 @@ class Crowd_Fundraiser_Campaign_Metabox_Admin {
 			CROWD_FUNDRAISER_SLUG . '-cause', 
 			__( 'Cause post ID', CROWD_FUNDRAISER_TEXT_DOMAIN ),
             array($this,'render_cause_meta_box'), 
-            Crowd_Fundraiser_Campaign::CUSTOM_POST_TYPE, 
+            Crowd_Fundraiser_Campaign::POST_TYPE, 
             'normal', 
             'high' 
 

@@ -20,15 +20,15 @@
  * @subpackage Crowd_Fundraiser/includes
  * @author     AdhocMaster <adhocmaster@live.com>
  */
-class Adhocmaster_Cart extends Adhocmaster_Model{
+class Adhocmaster_Cart extends Adhocmaster_Model {
 
 
 	/**
-	 * Define a unique custom post type here
+	 * Define a unique custom post type here. Must be overriden for child classes
 	 *
 	 * @since    1.0.0
 	 */
-	protected static $post_type = 'adhocmaster_cart';
+	const POST_TYPE = "adhocmaster_model";
 
 
 	/**
@@ -39,7 +39,7 @@ class Adhocmaster_Cart extends Adhocmaster_Model{
 	 * admin_id is set when cart made by an admin in lieu of another account or person. In case of a person who is not an user, 
 	 * payer_id is 0. post name has a index, so, it's used. As usually index is not create for 3 or less charactersm we will save data as admin-ID
 	 * amount is given in cents (*100 to actual ammount). No decimal numbers. Only integers
-	 *
+	 * admin id is saved in post name. Wordpress keeps it unique by adding numbers. We discard that when processing
 	 * @since    1.0.0
 	 */
 
@@ -100,7 +100,53 @@ class Adhocmaster_Cart extends Adhocmaster_Model{
 
 			$this->status = 'payment_waiting';
 
-			$this->admin_id = get_current_user_id();
+			$this->admin_id = 'admin-' . get_current_user_id();
+
+		}
+
+	}
+	/**
+	 * returns admin id from the admin_id field.
+	 *
+	 * Long Description.
+	 *
+	 * @since    1.0.0
+	 */
+
+	public function get_admin_id(){
+
+		if ( is_numeric( $this->admin_id ) ) {
+
+			return $this->admin_id;
+
+		}
+
+		$arr = explode( '-', $this->admin_id );
+
+		if ( isset( $arr[1] ) ) {
+
+			return $arr[1];
+
+		}
+
+		return 0;
+
+	}
+	/**
+	 * sets admin id in "admin-numeric" format
+	 *
+	 * @since    1.0.0
+	 */
+
+	public function set_admin_id( $admin_id ){
+
+		if ( is_numeric( $admin_id ) ) {
+
+			$this->admin_id = 'admin-' . $admin_id;
+
+		} else {
+
+			$this->admin_id = $admin_id;
 
 		}
 
@@ -165,7 +211,7 @@ class Adhocmaster_Cart extends Adhocmaster_Model{
 
 			}
 
-			if( $this->payer_id < 1 && $this->admin_id < 1 ) {
+			if( $this->payer_id < 1 && ( $this->admin_id == '' || $this->admin_id == 'admin-0' ) ) {
 
 				$errors->add( 'error', __( 'Guest checkout is disabled', Adhocmaster_Model::TEXT_DOMAIN ) );
 
