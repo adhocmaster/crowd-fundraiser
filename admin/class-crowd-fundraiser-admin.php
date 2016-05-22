@@ -40,6 +40,8 @@ class Crowd_Fundraiser_Admin {
 	 */
 	private $version;
 
+	const TOP_MENU_SLUG = 'crowd-fundraiser';
+
 	/**
 	 * Initialize the class and set its properties.
 	 *
@@ -99,5 +101,124 @@ class Crowd_Fundraiser_Admin {
 		wp_enqueue_script( $this->crowd_fundraiser, plugin_dir_url( __FILE__ ) . 'js/crowd-fundraiser-admin.js', array( 'jquery' ), $this->version, false );
 
 	}
+
+
+	/**
+	 * Menu for administrator
+	 *
+	 * @since    1.0.0
+	 */
+	public function menu() {
+
+		$capability = 'manage_options';
+
+
+		add_menu_page(  
+						__( 'Crowd Fundraiser', CROWD_FUNDRAISER_TEXT_DOMAIN ), 
+						__( 'Crowd Fundraiser', CROWD_FUNDRAISER_TEXT_DOMAIN ), 
+						$capability, 
+						self::TOP_MENU_SLUG, 
+						array( $this, 'general_settings' ), 
+						'dashicons-groups'
+					);
+
+		add_submenu_page( 
+							self::TOP_MENU_SLUG, 
+							__( 'Payment Settings', CROWD_FUNDRAISER_TEXT_DOMAIN ), 
+							__( 'Payment Settings', CROWD_FUNDRAISER_TEXT_DOMAIN ), 
+							$capability, 
+							self::TOP_MENU_SLUG . '-payment-settings', 
+							array( $this, 'payment_settings' ) 
+						); 
+
+	}
+
+
+	/**
+	 * Menu for administrator
+	 *
+	 * @since    1.0.0
+	 */
+
+	public function general_settings() {
+
+		if ( ! current_user_can( 'manage_options' ) )
+			wp_die( __( 'You do not have sufficient permissions to manage options for this site.' ) );
+
+	    // Create a header in the default WordPress 'wrap' container
+	    $html = '<div class="wrap">';
+	        $html .= '<h2>General Settings</h2>';
+	    $html .= '</div>';
+	     
+	    // Send the markup to the browser
+	    echo $html;
+
+	}
+
+
+	/**
+	 * Menu for administrator
+	 *
+	 * @since    1.0.0
+	 */
+
+	public function payment_settings() {
+
+		if ( ! current_user_can( 'manage_options' ) )
+			wp_die( __( 'You do not have sufficient permissions to manage options for this site.' ) );
+ 
+	    // Create a header in the default WordPress 'wrap' container
+	    $html = '<div class="wrap">';
+	        $html .= '<h2>Sandbox Plugin Options</h2>';
+	        $html .= '<p class="description">There are currently no options. This is just for demo purposes.</p>';
+	    $html .= '</div>';
+	     
+	    // Send the markup to the browser
+	    echo $html;
+
+	    do_settings_sections( self::TOP_MENU_SLUG . '-payment-settings' );
+
+	}
+
+	public function init_settings() {
+
+		$payment_menu_slug = self::TOP_MENU_SLUG . '-payment-settings';
+
+		// First, we register a section. This is necessary since all future options must belong to a 
+	    add_settings_section(
+	        'paypal_settings_section',         // ID used to identify this section and with which to register options
+	        'Paypal Options',                  // Title to be displayed on the administration page
+	        array( $this, 'paypal_settings_section' ) , // Callback used to render the description of the section
+	        $payment_menu_slug  // Page on which to add this section of options
+	    );
+
+
+	    add_settings_field( 
+	        'show_content',                     
+	        'Content',              
+	        array( $this, 'sandbox_toggle_content_callback' ),  
+	        $payment_menu_slug,                          
+	        'paypal_settings_section',         
+	        array(                              
+	            'Activate this setting to display the content.'
+	        )
+	    );
+
+	}
+
+	public function paypal_settings_section() {
+
+    	echo '<p>Select which areas of content you wish to display.</p>';
+
+	}
+
+	public function sandbox_toggle_content_callback($args) {
+ 
+	    $html = '<input type="checkbox" id="show_content" name="show_content" value="1" ' . checked(1, get_option('show_content'), false) . '/>'; 
+	    $html .= '<label for="show_content"> '  . $args[0] . '</label>'; 
+	     
+	    echo $html;
+	     
+	} // end sandbox_toggle_content_callback
 
 }

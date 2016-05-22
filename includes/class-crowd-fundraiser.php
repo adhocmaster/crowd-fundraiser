@@ -156,6 +156,10 @@ class Crowd_Fundraiser {
 
 		$this->loader->add_action( 'admin_init', 'Crowd_Fundraiser_Activator', 'upgrade' );
 
+		$this->loader->add_action( 'admin_menu', $plugin_admin, 'menu' );
+		
+		$this->loader->add_action( 'admin_init', $plugin_admin, 'init_settings' );
+
 	}
 
 	/**
