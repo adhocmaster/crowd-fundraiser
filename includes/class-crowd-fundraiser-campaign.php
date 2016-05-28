@@ -34,12 +34,6 @@ class Crowd_Fundraiser_Campaign extends Adhocmaster_Model {
 	const POST_TYPE = "campaign";
 	const META_NAME_CAUSE_ID = "cause_id";
 
-	/**
-	 * Define a unique custom post type here
-	 *
-	 * @since    1.0.0
-	 */
-	protected static $post_type = 'adhocmaster_cart';
 
 
 
