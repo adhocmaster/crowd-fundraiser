@@ -242,13 +242,13 @@ class Adhocmaster_Cart extends Adhocmaster_Model {
 	 * @since    1.0.0
 	 */
 
-	public function accept_payment($amount, $gateway = 'offline', $currency_code) {
+	public function accept_payment($amount, $gateway = 'offline', $currency_code, $txn_id ) {
 
 		// payment validation
 
 		$errors = new WP_Error();
 
-		if( $this->amount != $amount * 100 ) {
+		if( $this->amount != number_format( $amount * 100, 2 ) ) {
 
 			$errors->add( 'amount', __( 'Amounts do not match', Adhocmaster_Model::TEXT_DOMAIN ) );
 
@@ -266,12 +266,36 @@ class Adhocmaster_Cart extends Adhocmaster_Model {
 
 		}
 
-		$this->status = 'payment_accepted';
+		$this->status = 'payment_received';
+
+		$this->txn_id = $txn_id;
 
 		$this->gateway = $gateway;
 
-		return $this->save();
+		$cart_id = $this->save();
 
+		return $cart_id;
+
+		// if ( is_wp_error($cart_id) ) {
+
+		// 	return false;
+
+		// }
+
+		// return true;
+
+
+	}
+
+
+	/**
+	 * returns amount in actual unit of currency
+	 ** 
+	 * @since    1.0.0
+	 */
+	public function get_amount() {
+
+		return number_format( $this->amount / 100, 2 );
 
 	}
 

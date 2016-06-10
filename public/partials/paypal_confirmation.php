@@ -14,7 +14,7 @@
 
 require_once "cart_confirmation.php";
 
-$paypal_button = Adhocmaster_Paypal::get_form_classic();
+$paypal_button = Adhocmaster_Paypal::get_form_classic( $cart, $notification_url );
 
 if ( is_wp_error( $paypal_button ) ) {
 

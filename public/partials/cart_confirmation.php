@@ -14,6 +14,8 @@
 
 // $campaign = 
 
+$amount = $cart->get_amount();
+
 $html =	
 "<div>
 
@@ -24,7 +26,7 @@ $html =
 				". __( 'Amount', CROWD_FUNDRAISER_TEXT_DOMAIN ) ."
 			</td>
 			<td>
-				{$cart->amount}
+				{$amount}
 			</td>
 		</tr>
 

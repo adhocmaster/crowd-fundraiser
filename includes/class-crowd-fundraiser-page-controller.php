@@ -174,6 +174,12 @@ class Crowd_Fundraiser_Page_Controller {
 
 	}
 
+
+	/**
+	 * We can save page ids in wp_options. This function returns page permalink
+	 *
+	 * @since    1.0.0
+	 */
 	public function get_page_link_by_setting( $setting ) {
 
 
@@ -213,15 +219,12 @@ class Crowd_Fundraiser_Page_Controller {
 	/**
 	 * we will process all the data in template_redirect so that we can redirect if needed. Several hooks can be implemnented here
 	 *
+	 * @hook template_redirect
+	 *
 	 * @since    1.0.0
 	 */
 	public function process_data() {
 
-		/**
-		* process_data hook for payment methods to process payment. If successfull redirect to thank you page
-		*/
-
-		do_action('c_f_process_data');
 
 		// apply_filter( 'process_data_redirect', '' );
 
@@ -232,6 +235,12 @@ class Crowd_Fundraiser_Page_Controller {
 
 			case get_option(Crowd_Fundraiser_Page_Controller::PAMYMENT_PAGE_SETTING, 0):
 
+				/**
+				* process_data hook for payment methods to process payment. If successfull redirect to thank you page
+				*/
+
+				do_action('c_f_process_data');
+				
 				$this->process_data_cart();
 
 				break;
@@ -330,6 +339,8 @@ class Crowd_Fundraiser_Page_Controller {
 	/**
 	 * Hooked into wordpress the_content for all pages needed. 
 	 *
+	 * @hook the_content
+	 *
 	 * @since    1.0.0
 	 */
 	public function render_pages($content) {
@@ -395,7 +406,20 @@ class Crowd_Fundraiser_Page_Controller {
 
 			$campaign = new Crowd_Fundraiser_Campaign( $cart->order_id );
 
-			require_once(CROWD_FUNDRAISER_PATH . 'public/partials/paypal_confirmation.php');
+			switch ( $payment_method ) {
+				case 'paypal':
+
+						$notification_url = $this->get_page_link_by_setting( Crowd_Fundraiser_Page_Controller::PAMYMENT_PAGE_SETTING );
+
+						require_once( CROWD_FUNDRAISER_PATH . 'public/partials/paypal_confirmation.php' );
+
+					break;
+				
+				default:
+					# code...
+					break;
+			}
+
 
 
 		}

@@ -218,18 +218,18 @@ class Crowd_Fundraiser_Admin {
 
 
 	    add_settings_field( 
-	        'sandbox',                     
+	        'PAYPAL_SANDBOX',                     
 	        'Test mode',              
 	        array( $this, 'sandbox_toggle_callback' ),  
 	        $payment_menu_slug,                          
 	        $settings_section_id,         
 	        array(                              
-	            __( 'Turning on will process in paypal sandbox mode', CROWD_FUNDRAISER_TEXT_DOMAIN )
+	            __( 'Turning on will process in paypal sandbox mode. For testing purposes only.', CROWD_FUNDRAISER_TEXT_DOMAIN )
 	        )
 	    );
 
 	    add_settings_field( 
-	        'cf_paypal_email',                     
+	        'PAYPAL_BUSINESS_ACCOUNT',                     
 	        'Paypal email',              
 	        array( $this, 'paypal_email_callback' ),  
 	        $payment_menu_slug,                          
@@ -240,15 +240,61 @@ class Crowd_Fundraiser_Admin {
 	    );
 
 
+	    add_settings_field( 
+	        'PAYPAL_INVOICE_PREFIX',                     
+	        'Paypal invoice prefix',              
+	        array( $this, 'paypal_invoice_callback' ),  
+	        $payment_menu_slug,                          
+	        $settings_section_id,         
+	        array(                              
+	            __( 'Prefix added to paypal invoices', CROWD_FUNDRAISER_TEXT_DOMAIN )
+	        )
+	    );
+
+	    add_settings_field( 
+	        'PAYPAL_LOG_TRANSACTIONS',                     
+	        'Log transactions',              
+	        array( $this, 'paypal_log_callback' ),  
+	        $payment_menu_slug,                          
+	        $settings_section_id,         
+	        array(                              
+	            __( 'Logs transactions in php log, for testing purposes only', CROWD_FUNDRAISER_TEXT_DOMAIN )
+	        )
+	    );
+
+	    add_settings_field( 
+	        'PAYMENT_NOTIFICATION_EMAIL',                     
+	        'Payment notification email',              
+	        array( $this, 'payment_notification_email_callback' ),  
+	        $payment_menu_slug,                          
+	        $settings_section_id,         
+	        array(                              
+	            __( 'Email will be sent to this email after processing of payment', CROWD_FUNDRAISER_TEXT_DOMAIN )
+	        )
+	    );
+
+
 	    // Finally, we register the fields with WordPress
 	     
 	    register_setting(
 	        $payment_menu_slug,
-	        'sandbox'
+	        'PAYPAL_SANDBOX'
 	    );
 	    register_setting(
 	        $payment_menu_slug,
-	        'cf_paypal_email'
+	        'PAYPAL_BUSINESS_ACCOUNT'
+	    );
+	    register_setting(
+	        $payment_menu_slug,
+	        'PAYPAL_INVOICE_PREFIX'
+	    );
+	    register_setting(
+	        $payment_menu_slug,
+	        'PAYPAL_LOG_TRANSACTIONS'
+	    );
+	    register_setting(
+	        $payment_menu_slug,
+	        'PAYMENT_NOTIFICATION_EMAIL'
 	    );
 
 	}
@@ -263,9 +309,9 @@ class Crowd_Fundraiser_Admin {
 
 		// var_dump($args);
  
- 		$settings_name = 'sandbox';
+ 		$settings_name = 'PAYPAL_SANDBOX';
 
-	    $html = '<input type="checkbox" id="' . $settings_name . '" name="' . $settings_name . '" value="1" ' . checked(1, get_option($settings_name), false) . '/>'; 
+	    $html = '<input type="checkbox" id="' . $settings_name . '" name="' . $settings_name . '" value="1" ' . checked(1, get_option( $settings_name, 0 ), false) . '/>'; 
 	    $html .= '<label for="' . $settings_name . '"> '  . $args[0] . '</label>'; 
 	     
 	    echo $html;
@@ -276,10 +322,48 @@ class Crowd_Fundraiser_Admin {
 
 		// var_dump($args);
  
- 		$settings_name = 'cf_paypal_email';
+ 		$settings_name = 'PAYPAL_BUSINESS_ACCOUNT';
 
 	    $html = '<input type="text" id="' . $settings_name . '" name="' . $settings_name . '" value="' . get_option($settings_name). '" />'; 
 	    // $html .= '<label for="' . $settings_name . '"> '  . $args[0] . '</label>'; 
+	     
+	    echo $html;
+	     
+	}
+
+	public function paypal_invoice_callback($args) {
+
+		// var_dump($args);
+ 
+ 		$settings_name = 'PAYPAL_INVOICE_PREFIX';
+
+	    $html = '<input type="text" id="' . $settings_name . '" name="' . $settings_name . '" value="' . get_option($settings_name, 'paypal'). '" />'; 
+	    $html .= '<label for="' . $settings_name . '"> '  . $args[0] . '</label>'; 
+	     
+	    echo $html;
+	     
+	}
+	public function paypal_log_callback($args) {
+
+		// var_dump($args);
+ 
+ 		$settings_name = 'PAYPAL_LOG_TRANSACTIONS';
+
+	    $html = '<input type="text" id="' . $settings_name . '" name="' . $settings_name . '" value="' . get_option($settings_name, 'paypal'). '" />'; 
+	    $html .= '<label for="' . $settings_name . '"> '  . $args[0] . '</label>'; 
+	     
+	    echo $html;
+	     
+	}
+
+	public function payment_notification_email_callback($args) {
+
+		// var_dump($args);
+ 
+ 		$settings_name = 'PAYMENT_NOTIFICATION_EMAIL';
+
+	    $html = '<input type="text" id="' . $settings_name . '" name="' . $settings_name . '" value="' . get_option($settings_name). '" />'; 
+	    $html .= '<label for="' . $settings_name . '"> '  . $args[0] . '</label>'; 
 	     
 	    echo $html;
 	     

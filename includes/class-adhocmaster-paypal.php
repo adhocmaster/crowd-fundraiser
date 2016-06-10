@@ -58,9 +58,9 @@ class Adhocmaster_Paypal {
 
         }
 
-        $sandbox = get_option( 'ADHOCMASTER_PAYPAL_SANDBOX', true );
+        $sandbox = get_option( 'PAYPAL_SANDBOX', 1 );
 
-        if($sandbox) {
+        if( $sandbox ) {
 
             $sandbox ='.sandbox';
 
@@ -79,7 +79,7 @@ class Adhocmaster_Paypal {
 
             $array['invoice']       = get_option( 'PAYPAL_INVOICE_PREFIX', 'paypal' ) . '-' . $cart->ID;
 
-            $array['amount']        = $cart->amount;
+            $array['amount']        = $cart->get_amount();
 
             $array['item_name']     = sprintf( __( "Invoice no #%d", static::TEXT_DOMAIN ), $cart_id );
 
@@ -87,11 +87,11 @@ class Adhocmaster_Paypal {
 
             $array['no_note']       = 1;
 
-            $array['return']        = $notification_url;
+            $array['return']        = $notification_url . '?return_from_gateway=true';
 
-            $array['cancel_return'] = $notification_url;
+            $array['cancel_return'] = $notification_url . '?cancel_from_gateway=true';
 
-            $array['notify_url']    = $notification_url;
+            $array['notify_url']    = $notification_url . '?notification=paypal';
 
             $array['tax']           = 0;
 
@@ -132,9 +132,9 @@ class Adhocmaster_Paypal {
             // $cart = ICodeCart::GetInfo($cart_id);
 
             // if(!isset($PAYPAL_BUSINESS_ACCOUNT)|| $PAYPAL_BUSINESS_ACCOUNT=='')
-            //      ICodeError::LogAndStop("paypal business account not found");
+            //      error_log("paypal business account not found");
             // if(!isset($PAYPAL_INVOICE_PREFIX) || $PAYPAL_INVOICE_PREFIX=='')
-            //      ICodeError::LogAndStop("paypal prefix not found");       
+            //      error_log("paypal prefix not found");       
             // $invoiceId=$PAYPAL_INVOICE_PREFIX."-".$cart_id;
 
 
@@ -157,19 +157,17 @@ class Adhocmaster_Paypal {
 
         //verify if it's a IPN url
 
-        $is_notification = get_query_var('notification', false);
+        $notification_type = get_query_var('notification', '');
 
-        if( ! $is_notification ) {
+        if( $notification_type != 'paypal' ) {
 
             return;
 
         }
 
-        //ICodeError::LogAndStop(serialize($_POST));
-        global $CONFIGURATIONS;
 
         $PAYMENT_NOTIFICATION_EMAIL=get_option( 'PAYMENT_NOTIFICATION_EMAIL', false );
-        $PAYPAL_BUSINESS_ACCOUNT=get_option( 'PAYPAL_BUSINESS_ACCOUNT', false );
+        $PAYPAL_BUSINESS_ACCOUNT=get_option( 'PAYPAL_BUSINESS_ACCOUNT', '' );
         $PAYPAL_INVOICE_PREFIX=get_option( 'PAYPAL_INVOICE_PREFIX', 'paypal' );
         // The majority of the following code is a direct copy of the example code specified on the Paypal site.
 
@@ -177,22 +175,25 @@ class Adhocmaster_Paypal {
         // we must post all the variables back to paypal exactly unchanged and add an extra parameter cmd with value _notify-validate
 
         // initialise a variable with the requried cmd parameter
-        if ( get_option( 'LOG_TRANSACTIONS', false ) === true )
+        if ( get_option( 'PAYPAL_LOG_TRANSACTIONS', false ) === true )
            $logError=true;
         else
            $logError=false;
 
         if(!isset($PAYPAL_BUSINESS_ACCOUNT)|| $PAYPAL_BUSINESS_ACCOUNT=='')
-           ICodeError::LogAndStop("paypal business account not found");
+           error_log("paypal business account not found");
+
         if(!isset($PAYPAL_INVOICE_PREFIX) || $PAYPAL_INVOICE_PREFIX=='')
-           ICodeError::LogAndStop("paypal prefix not found");
+           error_log("paypal prefix not found");
 
         $req = 'cmd=_notify-validate';
 
         // go through each of the POSTed vars and add them to the variable
         foreach ($_POST as $key => $value) {
-        $value = urlencode(stripslashes($value));
-        $req .= "&$key=$value";
+
+            $value = urlencode(stripslashes($value));
+            $req .= "&$key=$value";
+
         }
         $header = '';
         // post back to PayPal system to validate
@@ -205,7 +206,7 @@ class Adhocmaster_Paypal {
 
         // comment out one of the following lines
                       
-        if( get_option( 'ADHOCMASTER_PAYPAL_SANDBOX', true) )
+        if( get_option( 'PAYPAL_SANDBOX', 1 ) )
            $fp = fsockopen ('www.sandbox.paypal.com', 80, $errno, $errstr, 30);
         else
            $fp = fsockopen ('www.paypal.com', 80, $errno, $errstr, 30);
@@ -214,23 +215,26 @@ class Adhocmaster_Paypal {
         //$fp = fsockopen ('ssl://www.paypal.com', 443, $errno, $errstr, 30);
 
 
-        if (!$fp) {
+        if ( !$fp ) {
         // HTTP ERROR
-          ICodeError::LogAndStop('Could not connect to paypal');
+          error_log('Could not connect to paypal');
+
         }
         else
         {     
-         if($logError)
-            ICodeError::Log(print_r($_POST,true));
-         fputs ($fp, $header . $req);
-         while (!feof($fp))
-         {
+            if($logError)
+                error_log( print_r($_POST,true) );
+
+            fputs ($fp, $header . $req);
+
+            while (!feof($fp))
+            {
                $res = fgets ($fp, 1024);
                if (strcmp ($res, "VERIFIED") == 0)
                {
 
                  if($logError)
-                    ICodeError::Log('Verified Paypal Transaction:');
+                    error_log('Verified Paypal Transaction:');
                  // assign posted variables to local variables
                  // the actual variables POSTed will vary depending on your application.
                  // there are a huge number of possible variables that can be used. See the paypal documentation.
@@ -240,9 +244,10 @@ class Adhocmaster_Paypal {
                  // if you have many complex variables to pass it is possible to use session variables to pass them.
 
                  $invoiceId = $_POST['invoice'];
-                 $invoiceArr=explode("-",$invoiceId);
+                 $invoiceArr=explode( "-", $invoiceId );
+
                  if($invoiceArr[0]!=$PAYPAL_INVOICE_PREFIX) 
-                     ICodeError::LogAndStop("paypal prefix $PAYPAL_INVOICE_PREFIX didn't match with {$invoiceArr[0]}");
+                     error_log("paypal prefix $PAYPAL_INVOICE_PREFIX didn't match with {$invoiceArr[0]}");
                      
                  $cart_id=$invoiceArr[1];
                  $payment_status = $_POST['payment_status'];
@@ -253,13 +258,14 @@ class Adhocmaster_Paypal {
                  $payer_email = $_POST['payer_email'];
 
                  // use the above params to look up what the price of "item_name" should be.
-                 $cart=ICodeCart::GetInfo($cart_id);
+
+                 $cart= new Adhocmaster_Cart( $cart_id );
                  
-                 if($cart->status == 'payment_recieved' )
-                     ICodeError::LogAndStop("Payment already received for cart # $cart_id before");
+                 if ( $cart->status == 'payment_received' )
+                     error_log("Payment already received for cart # $cart_id before");
                  
-                 if($logError)
-                     ICodeError::Log(print_r($cart,true));
+                 if ( $logError )
+                     error_log(print_r($cart,true));
 
                  //$amount_they_should_have_paid = lookup_price($item_name); // you need to create this code to find out what the price for the item they bought really is so that you can check it against what they have paid. This is an anti hacker check.
 
@@ -267,51 +273,57 @@ class Adhocmaster_Paypal {
                  // you must check at the least the following...
 
                  if ( 
-                    ($payment_status == 'Completed') &&   //payment_status = Completed
-                    ($receiver_email == $PAYPAL_BUSINESS_ACCOUNT) &&   // receiver_email is same as your account email
-                    ($payment_amount == floatval($cart->amount )) &&  //check they payed what they should have
-                    ($payment_currency == $cart->currency_code) &&  // and its the correct currency
-                    (strcmp($txn_id,$cart->transaction_id)!=0)
+                    ( $payment_status == 'Completed' ) &&   //payment_status = Completed
+                    ( $receiver_email == $PAYPAL_BUSINESS_ACCOUNT ) &&   // receiver_email is same as your account email
+                    ( strcmp($txn_id, $cart->txn_id) != 0 ) //txn_id isn't same as previous to stop duplicate payments. You will need to write a function to do this check.
                     )
-                 {  //txn_id isn't same as previous to stop duplicate payments. You will need to write a function to do this check.
+                    {  
 
-                    //        uncomment this section during development to receive an email to indicate whats happened
-                       
                        if($logError)
                        {
-                           ICodeError::Log("all conditions ok. calling Cart::AcceptPayment(\$_POST,'paypal')");
+                           error_log("all conditions ok. calling Cart::AcceptPayment(\$_POST,'paypal')");
                        }
-                       $_POST['cartId']=$cart_id;
-                       if(ICodeCart::AcceptPayment($_POST,'paypal'))
+
+                       $errors = $cart->accept_payment( $payment_amount, 'paypal', $currency_code, $txn_id );
+
+                       if( !is_wp_error($errors) )
                        {
 
                            $mail_Subject = "completed status received from paypal for invoice $invoiceId";
                            $mail_Body = "completed:  \n\nThe Invoice ID number is: $invoiceId";                                                      
                        }
                        else
-                       {  
+                       {
+
+                           $error_messages = implode( '\n', $errors->get_error_messages() );
                            $mail_Subject = "Error: completed status received from paypal for invoice $invoiceId";
-                           $mail_Body = "completed:  \n\nThe Invoice ID number is: $invoiceId but the invoice was not updated. Please update it manually";
+                           $mail_Body = "Errors: {$error_messages} \n completed:  \n\nThe Invoice ID number is: $invoiceId but the invoice was not updated. Please update it manually";
 
                        }
+
                        ICodeTools::ICodeMail($PAYMENT_NOTIFICATION_EMAIL, get_option( 'SYSTEM_EMAIL_ADDRESS' ), $mail_Subject, $mail_Body,get_option( 'WEBMASTER_EMAIL' ));
                  }
                  else
                  {
                      //             
                      
-                     if($logError)
-                        ICodeError::Log('Potential fraud attack');
-                     if(!($payment_status == 'Completed'))
-                        ICodeError::Log('Payment status not completed');
-                     if(!($receiver_email == $PAYPAL_BUSINESS_ACCOUNT))       
-                        ICodeError::Log("receiver email is not business account:$PAYPAL_BUSINESS_ACCOUNT");
-                     if(!($payment_amount == floatval($cart->amount)))
-                        ICodeError::Log('amount doesn\'t match');
-                     if(!(strcmp($txn_id,$cart->transaction_id)==0))
-                        ICodeError::Log('transaction id same');
-                     if(!($payment_currency == $cart->currency_code))
-                        ICodeError::Log('currency codes doesn\'t match');
+                     if( $logError )
+                        error_log('Potential fraud attack');
+
+                     if( ! ( $payment_status == 'Completed' ) )
+                        error_log('Payment status not completed');
+
+                     if( ! ( $receiver_email == $PAYPAL_BUSINESS_ACCOUNT ) )       
+                        error_log("receiver email is not business account:$PAYPAL_BUSINESS_ACCOUNT");
+
+                     if( ! ( $payment_amount == floatval( $cart->get_amount() ) ) )
+                        error_log('amount doesn\'t match');
+
+                     if( ! (strcmp( $txn_id, $cart->txn_id)==0 ) )
+                        error_log('transaction id same');
+
+                     if( ! ( $payment_currency == $cart->currency_code ) )
+                        error_log('currency codes doesn\'t match');
                      //
                      // we will send an email to say that something went wrong
                      $mail_Subject = "PayPal IPN status not completed or security check fail";
@@ -328,7 +340,7 @@ class Adhocmaster_Paypal {
                      //   
                    
                      if($logError)
-                        ICodeError::LogAndStop('INVALID for cartId'.$cart_id);
+                        error_log('INVALID for cartId'.$cart_id);
                      $mail_Subject = "PayPal - Invalid IPN ";
 
                      $invoiceId = $_POST['invoice'];
@@ -340,13 +352,16 @@ class Adhocmaster_Paypal {
                }
                else
                {  
-                     ICodeError::Log('StrangeData from paypal server: '.$res);
+                     error_log('StrangeData from paypal server: '.$res);
                }
-          } //end of while
-        	fclose ($fp);
+            } //end of while
+            fclose ($fp);
         }
 
+        exit();
+
     }
+
 }
 
 add_action( 'c_f_process_data', array( 'Adhocmaster_Paypal', 'IPN' ) );

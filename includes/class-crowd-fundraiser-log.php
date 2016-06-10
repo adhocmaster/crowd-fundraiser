@@ -29,9 +29,9 @@ class Crowd_Fundraiser_Log {
 	 *
 	 * @since    1.0.0
 	 */
-	public static function log($message) {
+	public static function log($message, $fatal = false) {
 
-	    if (WP_DEBUG === true) {
+	    if ( WP_DEBUG === true || $fatal ) {
 
 	        if (is_array($message) || is_object($message)) {
 
