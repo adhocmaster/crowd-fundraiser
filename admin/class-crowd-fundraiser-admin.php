@@ -227,6 +227,16 @@ class Crowd_Fundraiser_Admin {
 	            __( 'Turning on will process in paypal sandbox mode. For testing purposes only.', CROWD_FUNDRAISER_TEXT_DOMAIN )
 	        )
 	    );
+	    add_settings_field( 
+	        'PAYPAL_LOG_TRANSACTIONS',                     
+	        'Log transactions',              
+	        array( $this, 'paypal_log_callback' ),  
+	        $payment_menu_slug,                          
+	        $settings_section_id,         
+	        array(                              
+	            __( 'Logs transactions in php log, for testing purposes only', CROWD_FUNDRAISER_TEXT_DOMAIN )
+	        )
+	    );
 
 	    add_settings_field( 
 	        'PAYPAL_BUSINESS_ACCOUNT',                     
@@ -251,16 +261,6 @@ class Crowd_Fundraiser_Admin {
 	        )
 	    );
 
-	    add_settings_field( 
-	        'PAYPAL_LOG_TRANSACTIONS',                     
-	        'Log transactions',              
-	        array( $this, 'paypal_log_callback' ),  
-	        $payment_menu_slug,                          
-	        $settings_section_id,         
-	        array(                              
-	            __( 'Logs transactions in php log, for testing purposes only', CROWD_FUNDRAISER_TEXT_DOMAIN )
-	        )
-	    );
 
 	    add_settings_field( 
 	        'PAYMENT_NOTIFICATION_EMAIL',                     
@@ -282,15 +282,15 @@ class Crowd_Fundraiser_Admin {
 	    );
 	    register_setting(
 	        $payment_menu_slug,
+	        'PAYPAL_LOG_TRANSACTIONS'
+	    );
+	    register_setting(
+	        $payment_menu_slug,
 	        'PAYPAL_BUSINESS_ACCOUNT'
 	    );
 	    register_setting(
 	        $payment_menu_slug,
 	        'PAYPAL_INVOICE_PREFIX'
-	    );
-	    register_setting(
-	        $payment_menu_slug,
-	        'PAYPAL_LOG_TRANSACTIONS'
 	    );
 	    register_setting(
 	        $payment_menu_slug,
@@ -349,7 +349,7 @@ class Crowd_Fundraiser_Admin {
  
  		$settings_name = 'PAYPAL_LOG_TRANSACTIONS';
 
-	    $html = '<input type="text" id="' . $settings_name . '" name="' . $settings_name . '" value="' . get_option($settings_name, 'paypal'). '" />'; 
+	    $html = '<input type="checkbox" id="' . $settings_name . '" name="' . $settings_name . '" value="1" ' . checked(1, get_option( $settings_name, 0 ), false) . '/>'; 
 	    $html .= '<label for="' . $settings_name . '"> '  . $args[0] . '</label>'; 
 	     
 	    echo $html;
@@ -362,7 +362,7 @@ class Crowd_Fundraiser_Admin {
  
  		$settings_name = 'PAYMENT_NOTIFICATION_EMAIL';
 
-	    $html = '<input type="text" id="' . $settings_name . '" name="' . $settings_name . '" value="' . get_option($settings_name). '" />'; 
+	    $html = '<input type="text" id="' . $settings_name . '" name="' . $settings_name . '" value="' . get_option( $settings_name, get_option( 'admin_email' ) ). '" />'; 
 	    $html .= '<label for="' . $settings_name . '"> '  . $args[0] . '</label>'; 
 	     
 	    echo $html;

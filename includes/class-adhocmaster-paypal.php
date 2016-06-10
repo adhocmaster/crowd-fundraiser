@@ -81,7 +81,7 @@ class Adhocmaster_Paypal {
 
             $array['amount']        = $cart->get_amount();
 
-            $array['item_name']     = sprintf( __( "Invoice no #%d", static::TEXT_DOMAIN ), $cart_id );
+            $array['item_name']     = sprintf( __( "Invoice no #%d", static::TEXT_DOMAIN ), $cart->ID );
 
             $array['shopping_url']  = $notification_url;
 
@@ -157,7 +157,11 @@ class Adhocmaster_Paypal {
 
         //verify if it's a IPN url
 
+        // echo "I am in IPN";
+
         $notification_type = get_query_var('notification', '');
+
+        // var_dump($notification_type);
 
         if( $notification_type != 'paypal' ) {
 
@@ -166,7 +170,7 @@ class Adhocmaster_Paypal {
         }
 
 
-        $PAYMENT_NOTIFICATION_EMAIL=get_option( 'PAYMENT_NOTIFICATION_EMAIL', false );
+        $PAYMENT_NOTIFICATION_EMAIL=get_option( 'PAYMENT_NOTIFICATION_EMAIL', get_option( 'admin_email' ) );
         $PAYPAL_BUSINESS_ACCOUNT=get_option( 'PAYPAL_BUSINESS_ACCOUNT', '' );
         $PAYPAL_INVOICE_PREFIX=get_option( 'PAYPAL_INVOICE_PREFIX', 'paypal' );
         // The majority of the following code is a direct copy of the example code specified on the Paypal site.
@@ -301,7 +305,10 @@ class Adhocmaster_Paypal {
 
                        }
 
-                       ICodeTools::ICodeMail($PAYMENT_NOTIFICATION_EMAIL, get_option( 'SYSTEM_EMAIL_ADDRESS' ), $mail_Subject, $mail_Body,get_option( 'WEBMASTER_EMAIL' ));
+                       // ICodeTools::ICodeMail($PAYMENT_NOTIFICATION_EMAIL, get_option( 'SYSTEM_EMAIL_ADDRESS' ), $mail_Subject, $mail_Body,get_option( 'WEBMASTER_EMAIL' ))
+
+                       wp_mail( $PAYMENT_NOTIFICATION_EMAIL, $mail_Subject, $mail_Body );
+
                  }
                  else
                  {
@@ -329,7 +336,8 @@ class Adhocmaster_Paypal {
                      $mail_Subject = "PayPal IPN status not completed or security check fail";
                      $mail_Body = "Something wrong. \n\nThe Invoice ID number is: $invoiceId \n\nThe transaction ID number is: $txn_id \n\n Payment status = $payment_status \n\n Payment amount = $payment_amount".print_r($_POST,true);;
 
-                     ICodeTools::ICodeMail($PAYMENT_NOTIFICATION_EMAIL, get_option( 'SYSTEM_EMAIL_ADDRESS' ), $mail_Subject, $mail_Body,get_option( 'WEBMASTER_EMAIL' ));
+                     // ICodeTools::ICodeMail($PAYMENT_NOTIFICATION_EMAIL, get_option( 'SYSTEM_EMAIL_ADDRESS' ), $mail_Subject, $mail_Body,get_option( 'WEBMASTER_EMAIL' ));
+                     wp_mail( $PAYMENT_NOTIFICATION_EMAIL, $mail_Subject, $mail_Body );
 
                  }
                }
@@ -347,7 +355,10 @@ class Adhocmaster_Paypal {
                      $txn_id = $_POST['txn_id'];                   //unique transaction id
                      $mail_Body = "We have had an INVALID response.  \n\nThe Invoice ID number is: $invoiceId \n\nThe transaction ID number is: $txn_id ";
 
-                     ICodeTools::ICodeMail($PAYMENT_NOTIFICATION_EMAIL, get_option( 'SYSTEM_EMAIL_ADDRESS'), $mail_Subject, $mail_Body,get_option( 'WEBMASTER_EMAIL' ));
+                     // ICodeTools::ICodeMail($PAYMENT_NOTIFICATION_EMAIL, get_option( 'SYSTEM_EMAIL_ADDRESS'), $mail_Subject, $mail_Body,get_option( 'WEBMASTER_EMAIL' ));
+
+
+                     wp_mail( $PAYMENT_NOTIFICATION_EMAIL, $mail_Subject, $mail_Body );
 
                }
                else
