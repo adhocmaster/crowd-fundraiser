@@ -104,7 +104,9 @@ class Crowd_Fundraiser_Admin {
 
 
 	/**
-	 * Menu for administrator
+	 * Menu for backend. Attached in Main controller's admin hook
+	 *
+	 * @hook admin_menu
 	 *
 	 * @since    1.0.0
 	 */
@@ -118,7 +120,7 @@ class Crowd_Fundraiser_Admin {
 						__( 'Crowd Fundraiser', CROWD_FUNDRAISER_TEXT_DOMAIN ), 
 						$capability, 
 						self::TOP_MENU_SLUG, 
-						array( $this, 'general_settings' ), 
+						array( $this, 'general_settings_page' ), 
 						'dashicons-groups'
 					);
 
@@ -128,7 +130,7 @@ class Crowd_Fundraiser_Admin {
 							__( 'Payment Settings', CROWD_FUNDRAISER_TEXT_DOMAIN ), 
 							$capability, 
 							self::TOP_MENU_SLUG . '-payment-settings', 
-							array( $this, 'payment_settings' ) 
+							array( $this, 'payment_settings_page' ) 
 						); 
 
 	}
@@ -140,7 +142,7 @@ class Crowd_Fundraiser_Admin {
 	 * @since    1.0.0
 	 */
 
-	public function general_settings() {
+	public function general_settings_page() {
 
 		if ( ! current_user_can( 'manage_options' ) )
 			wp_die( __( 'You do not have sufficient permissions to manage options for this site.' ) );
@@ -162,7 +164,7 @@ class Crowd_Fundraiser_Admin {
 	 * @since    1.0.0
 	 */
 
-	public function payment_settings() {
+	public function payment_settings_page() {
 
 		if ( ! current_user_can( 'manage_options' ) )
 			wp_die( __( 'You do not have sufficient permissions to manage options for this site.' ) );
@@ -171,9 +173,9 @@ class Crowd_Fundraiser_Admin {
 
 	    // Create a header in the default WordPress 'wrap' container
 	    $html = '<div class="wrap">';
-	        $html .= '<h2>Sandbox Plugin Options</h2>';
-	        $html .= '<p class="description">There are currently no options. This is just for demo purposes.</p>';
-	    $html .= '</div>';
+	        $html .= '<h2>Payment methods</h2>';
+	        $html .= '<p class="description">Payment options</p>';
+	    // $html .= '</div>';
 	     
 	    // Send the markup to the browser
 	    echo $html;
@@ -182,36 +184,58 @@ class Crowd_Fundraiser_Admin {
 
 		echo "<form method='post' action='options.php'>";
 
-		settings_fields( $payment_menu_slug );
-		do_settings_sections( $payment_menu_slug );
-		submit_button();
+			settings_fields( $payment_menu_slug );
+			do_settings_sections( $payment_menu_slug );
+			submit_button();
 
-		echo '</form>';
+		echo '</form>
+			</div>';
 	    // do_settings_sections( self::TOP_MENU_SLUG . '-payment-settings' );
 
 	}
 
+	/**
+	 * Attached in Main controller's admin hook admin_init
+	 *
+	 * @hook admin_init
+	 *
+	 * @since    1.0.0
+	 */
 	public function init_settings() {
 
 		$payment_menu_slug = self::TOP_MENU_SLUG . '-payment-settings';
 
 		// First, we register a section. This is necessary since all future options must belong to a 
+
+		$settings_section_id = 'paypal_settings_section';
+
 	    add_settings_section(
-	        'paypal_settings_section',         // ID used to identify this section and with which to register options
-	        'Paypal Options',                  // Title to be displayed on the administration page
+	        $settings_section_id,         				// ID used to identify this section and with which to register options
+	        'Paypal',                  			// Title to be displayed on the administration page
 	        array( $this, 'paypal_settings_section' ) , // Callback used to render the description of the section
-	        $payment_menu_slug  // Page on which to add this section of options
+	        $payment_menu_slug  						// Page on which to add this section of options
 	    );
 
 
 	    add_settings_field( 
-	        'show_content',                     
-	        'Content',              
-	        array( $this, 'sandbox_toggle_content_callback' ),  
+	        'sandbox',                     
+	        'Test mode',              
+	        array( $this, 'sandbox_toggle_callback' ),  
 	        $payment_menu_slug,                          
-	        'paypal_settings_section',         
+	        $settings_section_id,         
 	        array(                              
-	            'Activate this setting to display the content.'
+	            __( 'Turning on will process in paypal sandbox mode', CROWD_FUNDRAISER_TEXT_DOMAIN )
+	        )
+	    );
+
+	    add_settings_field( 
+	        'cf_paypal_email',                     
+	        'Paypal email',              
+	        array( $this, 'paypal_email_callback' ),  
+	        $payment_menu_slug,                          
+	        $settings_section_id,         
+	        array(                              
+	            __( 'Paypal email account', CROWD_FUNDRAISER_TEXT_DOMAIN )
 	        )
 	    );
 
@@ -220,24 +244,45 @@ class Crowd_Fundraiser_Admin {
 	     
 	    register_setting(
 	        $payment_menu_slug,
-	        'show_content'
+	        'sandbox'
+	    );
+	    register_setting(
+	        $payment_menu_slug,
+	        'cf_paypal_email'
 	    );
 
 	}
 
 	public function paypal_settings_section() {
 
-    	echo '<p>Select which areas of content you wish to display.</p>';
+    	echo '<p>Options for your paypal account.</p>';
 
 	}
 
-	public function sandbox_toggle_content_callback($args) {
+	public function sandbox_toggle_callback($args) {
+
+		// var_dump($args);
  
-	    $html = '<input type="checkbox" id="show_content" name="show_content" value="1" ' . checked(1, get_option('show_content'), false) . '/>'; 
-	    $html .= '<label for="show_content"> '  . $args[0] . '</label>'; 
+ 		$settings_name = 'sandbox';
+
+	    $html = '<input type="checkbox" id="' . $settings_name . '" name="' . $settings_name . '" value="1" ' . checked(1, get_option($settings_name), false) . '/>'; 
+	    $html .= '<label for="' . $settings_name . '"> '  . $args[0] . '</label>'; 
 	     
 	    echo $html;
 	     
-	} // end sandbox_toggle_content_callback
+	}
+
+	public function paypal_email_callback($args) {
+
+		// var_dump($args);
+ 
+ 		$settings_name = 'cf_paypal_email';
+
+	    $html = '<input type="text" id="' . $settings_name . '" name="' . $settings_name . '" value="' . get_option($settings_name). '" />'; 
+	    // $html .= '<label for="' . $settings_name . '"> '  . $args[0] . '</label>'; 
+	     
+	    echo $html;
+	     
+	}
 
 }
