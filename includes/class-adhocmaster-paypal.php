@@ -87,9 +87,9 @@ class Adhocmaster_Paypal {
 
             $array['no_note']       = 1;
 
-            $array['return']        = $notification_url . '?return_from_gateway=true';
+            $array['return']        = $notification_url . '?return_from_gateway=true&cart_id=' . $cart->ID;
 
-            $array['cancel_return'] = $notification_url . '?cancel_from_gateway=true';
+            $array['cancel_return'] = $notification_url . '?cancel_from_gateway=true&cart_id=' . $cart->ID;
 
             $array['notify_url']    = $notification_url . '?notification=paypal';
 

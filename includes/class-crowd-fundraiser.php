@@ -176,6 +176,11 @@ class Crowd_Fundraiser {
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_styles' );
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts' );
 
+		/* 
+		All the non-hidden custom posts are registered through Crowd_Fundraiser_Custom_Post function. 
+		If you add a new custom post which needs to be shown in public add in the function.
+		*/
+
 		$this->loader->add_action( 'init', 'Crowd_Fundraiser_Custom_Post', 'register' );
 
 		$campaign_controller = Crowd_Fundraiser_Campaign_Controller::get_instance($this->loader);

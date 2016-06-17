@@ -295,7 +295,7 @@ class Crowd_Fundraiser_Page_Controller {
 
 			$cart = new Adhocmaster_Cart();
 
-			$cart->amount = number_format( floatval( $_POST['d_amount'] ), 2 ); // takes only two decimal points
+			$cart->amount = number_format( floatval( $_POST['d_amount'] ), 2 ) * 100; // takes only two decimal points
 
 			$cart->currency_code = sanitize_text_field( $_POST['d_currency'] );
 

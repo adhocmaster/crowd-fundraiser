@@ -23,15 +23,18 @@
 class Crowd_Fundraiser_Custom_Post {
 
 	/**
-	 * Short Description. (use period)
+	 * Function which registers all the custom posts needed.
 	 *
-	 * Long Description.
+	 * All the non-hidden custom posts are registered through Crowd_Fundraiser_Custom_Post function. 
+	 * If you add a new custom post which needs to be shown in public add in the function.
 	 *
 	 * @since    1.0.0
 	 */
 	public static function register() {
 
 		Crowd_Fundraiser_Campaign_Controller::register_custom_post();
+
+		Crowd_Fundraiser_Cart_Controller::register_custom_post();
 
 
 	}
