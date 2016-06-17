@@ -28,7 +28,7 @@ class Adhocmaster_Cart extends Adhocmaster_Model {
 	 *
 	 * @since    1.0.0
 	 */
-	const POST_TYPE = "adhocmaster_model";
+	const POST_TYPE = "adhocmaster_cart";
 
 
 	/**
