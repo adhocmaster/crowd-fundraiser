@@ -93,7 +93,7 @@ class Crowd_Fundraiser_Campaign_Metabox_Admin {
         $cause_id = get_post_meta( $post->ID, Crowd_Fundraiser_Campaign::META_NAME_CAUSE_ID, true );
         // other meta data
        
-        $cause_id_label = __( 'Campaign ID', CROWD_FUNDRAISER_TEXT_DOMAIN );
+        $cause_id_label = __( 'Cause ID', CROWD_FUNDRAISER_TEXT_DOMAIN );
         // other labels
         
         $table = "
