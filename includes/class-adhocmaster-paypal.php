@@ -237,49 +237,49 @@ class Adhocmaster_Paypal {
                if (strcmp ($res, "VERIFIED") == 0)
                {
 
-                 if($logError)
+                    if($logError)
                     error_log('Verified Paypal Transaction:');
-                 // assign posted variables to local variables
-                 // the actual variables POSTed will vary depending on your application.
-                 // there are a huge number of possible variables that can be used. See the paypal documentation.
+                    // assign posted variables to local variables
+                    // the actual variables POSTed will vary depending on your application.
+                    // there are a huge number of possible variables that can be used. See the paypal documentation.
 
-                 // the ones shown here are what is needed for a simple purchase
-                 // a "custom" variable is available for you to pass whatever you want in it. 
-                 // if you have many complex variables to pass it is possible to use session variables to pass them.
+                    // the ones shown here are what is needed for a simple purchase
+                    // a "custom" variable is available for you to pass whatever you want in it. 
+                    // if you have many complex variables to pass it is possible to use session variables to pass them.
 
-                 $invoiceId = $_POST['invoice'];
-                 $invoiceArr=explode( "-", $invoiceId );
+                    $invoiceId = $_POST['invoice'];
+                    $invoiceArr=explode( "-", $invoiceId );
 
-                 if($invoiceArr[0]!=$PAYPAL_INVOICE_PREFIX) 
+                    if($invoiceArr[0]!=$PAYPAL_INVOICE_PREFIX) 
                      error_log("paypal prefix $PAYPAL_INVOICE_PREFIX didn't match with {$invoiceArr[0]}");
                      
-                 $cart_id=$invoiceArr[1];
-                 $payment_status = $_POST['payment_status'];
-                 $payment_amount = floatval($_POST['mc_gross']);         //full amount of payment. payment_gross in US
-                 $payment_currency = $_POST['mc_currency'];
-                 $txn_id = $_POST['txn_id'];                   //unique transaction id
-                 $receiver_email = $_POST['receiver_email'];
-                 $payer_email = $_POST['payer_email'];
+                    $cart_id=$invoiceArr[1];
+                    $payment_status = $_POST['payment_status'];
+                    $payment_amount = floatval($_POST['mc_gross']);         //full amount of payment. payment_gross in US
+                    $payment_currency = $_POST['mc_currency'];
+                    $txn_id = $_POST['txn_id'];                   //unique transaction id
+                    $receiver_email = $_POST['receiver_email'];
+                    $payer_email = $_POST['payer_email'];
 
-                 // use the above params to look up what the price of "item_name" should be.
+                    // use the above params to look up what the price of "item_name" should be.
 
-                 $cart= new Adhocmaster_Cart( $cart_id );
-                 
-                 if ( $cart->status == 'payment_received' )
+                    $cart= new Adhocmaster_Cart( $cart_id );
+
+                    if ( $cart->status == 'payment_received' )
                      error_log("Payment already received for cart # $cart_id before");
-                 
-                 if ( $logError )
+
+                    if ( $logError )
                      error_log(print_r($cart,true));
 
-                 //$amount_they_should_have_paid = lookup_price($item_name); // you need to create this code to find out what the price for the item they bought really is so that you can check it against what they have paid. This is an anti hacker check.
+                    //$amount_they_should_have_paid = lookup_price($item_name); // you need to create this code to find out what the price for the item they bought really is so that you can check it against what they have paid. This is an anti hacker check.
 
-                 // the next part is also very important from a security point of view
-                 // you must check at the least the following...
+                    // the next part is also very important from a security point of view
+                    // you must check at the least the following...
 
-                 if ( 
-                    ( $payment_status == 'Completed' ) &&   //payment_status = Completed
-                    ( $receiver_email == $PAYPAL_BUSINESS_ACCOUNT ) &&   // receiver_email is same as your account email
-                    ( strcmp($txn_id, $cart->txn_id) != 0 ) //txn_id isn't same as previous to stop duplicate payments. You will need to write a function to do this check.
+                    if( 
+                        ( $payment_status == 'Completed' ) &&   //payment_status = Completed
+                        ( $receiver_email == $PAYPAL_BUSINESS_ACCOUNT ) &&   // receiver_email is same as your account email
+                        ( strcmp($txn_id, $cart->txn_id) != 0 ) //txn_id isn't same as previous to stop duplicate payments. You will need to write a function to do this check.
                     )
                     {  
 
@@ -309,37 +309,37 @@ class Adhocmaster_Paypal {
 
                        wp_mail( $PAYMENT_NOTIFICATION_EMAIL, $mail_Subject, $mail_Body );
 
-                 }
-                 else
-                 {
-                     //             
-                     
-                     if( $logError )
-                        error_log('Potential fraud attack');
+                    }
+                    else
+                    {
+                        //             
 
-                     if( ! ( $payment_status == 'Completed' ) )
-                        error_log('Payment status not completed');
+                        if( $logError )
+                            error_log('Potential fraud attack');
 
-                     if( ! ( $receiver_email == $PAYPAL_BUSINESS_ACCOUNT ) )       
-                        error_log("receiver email is not business account:$PAYPAL_BUSINESS_ACCOUNT");
+                        if( ! ( $payment_status == 'Completed' ) )
+                            error_log('Payment status not completed');
 
-                     if( ! ( $payment_amount == floatval( $cart->get_amount() ) ) )
-                        error_log('amount doesn\'t match');
+                        if( ! ( $receiver_email == $PAYPAL_BUSINESS_ACCOUNT ) )       
+                            error_log("receiver email is not business account:$PAYPAL_BUSINESS_ACCOUNT");
 
-                     if( ! (strcmp( $txn_id, $cart->txn_id)==0 ) )
-                        error_log('transaction id same');
+                        if( ! ( $payment_amount == floatval( $cart->get_amount() ) ) )
+                            error_log('amount doesn\'t match');
 
-                     if( ! ( $payment_currency == $cart->currency_code ) )
-                        error_log('currency codes doesn\'t match');
-                     //
-                     // we will send an email to say that something went wrong
-                     $mail_Subject = "PayPal IPN status not completed or security check fail";
-                     $mail_Body = "Something wrong. \n\nThe Invoice ID number is: $invoiceId \n\nThe transaction ID number is: $txn_id \n\n Payment status = $payment_status \n\n Payment amount = $payment_amount".print_r($_POST,true);;
+                        if( ! (strcmp( $txn_id, $cart->txn_id)==0 ) )
+                            error_log('transaction id same');
 
-                     // ICodeTools::ICodeMail($PAYMENT_NOTIFICATION_EMAIL, get_option( 'SYSTEM_EMAIL_ADDRESS' ), $mail_Subject, $mail_Body,get_option( 'WEBMASTER_EMAIL' ));
-                     wp_mail( $PAYMENT_NOTIFICATION_EMAIL, $mail_Subject, $mail_Body );
+                        if( ! ( $payment_currency == $cart->currency_code ) )
+                            error_log('currency codes doesn\'t match');
+                        //
+                        // we will send an email to say that something went wrong
+                        $mail_Subject = "PayPal IPN status not completed or security check fail";
+                        $mail_Body = "Something wrong. \n\nThe Invoice ID number is: $invoiceId \n\nThe transaction ID number is: $txn_id \n\n Payment status = $payment_status \n\n Payment amount = $payment_amount".print_r($_POST,true);;
 
-                 }
+                        // ICodeTools::ICodeMail($PAYMENT_NOTIFICATION_EMAIL, get_option( 'SYSTEM_EMAIL_ADDRESS' ), $mail_Subject, $mail_Body,get_option( 'WEBMASTER_EMAIL' ));
+                        wp_mail( $PAYMENT_NOTIFICATION_EMAIL, $mail_Subject, $mail_Body );
+
+                    }
                }
                else if (strcmp ($res, "INVALID") == 0)
                {
