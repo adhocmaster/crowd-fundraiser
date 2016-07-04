@@ -170,16 +170,21 @@ class Adhocmaster_Paypal {
         }
 
 
-        $PAYMENT_NOTIFICATION_EMAIL=get_option( 'PAYMENT_NOTIFICATION_EMAIL', get_option( 'admin_email' ) );
-        $PAYPAL_BUSINESS_ACCOUNT=get_option( 'PAYPAL_BUSINESS_ACCOUNT', '' );
-        $PAYPAL_INVOICE_PREFIX=get_option( 'PAYPAL_INVOICE_PREFIX', 'paypal' );
+        $PAYMENT_NOTIFICATION_EMAIL = get_option( 'PAYMENT_NOTIFICATION_EMAIL', get_option( 'admin_email' ) );
+        $PAYPAL_BUSINESS_ACCOUNT    = get_option( 'PAYPAL_BUSINESS_ACCOUNT', '' );
+        $PAYPAL_INVOICE_PREFIX      = get_option( 'PAYPAL_INVOICE_PREFIX', 'paypal' );
         // The majority of the following code is a direct copy of the example code specified on the Paypal site.
 
         // Paypal POSTs HTML FORM variables to this page
         // we must post all the variables back to paypal exactly unchanged and add an extra parameter cmd with value _notify-validate
 
         // initialise a variable with the requried cmd parameter
-        if ( get_option( 'PAYPAL_LOG_TRANSACTIONS', false ) === true )
+
+        $logTransactions = get_option( 'PAYPAL_LOG_TRANSACTIONS', 0 );
+
+        // var_dump($logTransactions);
+
+        if ( get_option( 'PAYPAL_LOG_TRANSACTIONS', 0 ) == true )
            $logError=true;
         else
            $logError=false;
@@ -191,6 +196,9 @@ class Adhocmaster_Paypal {
            error_log("paypal prefix not found");
 
         $req = 'cmd=_notify-validate';
+
+        // var_dump($_POST);
+        // var_dump($logError);
 
         // go through each of the POSTed vars and add them to the variable
         foreach ($_POST as $key => $value) {
@@ -238,7 +246,7 @@ class Adhocmaster_Paypal {
                {
 
                     if($logError)
-                    error_log('Verified Paypal Transaction:');
+                        error_log('Verified Paypal Transaction:');
                     // assign posted variables to local variables
                     // the actual variables POSTed will vary depending on your application.
                     // there are a huge number of possible variables that can be used. See the paypal documentation.
@@ -285,7 +293,7 @@ class Adhocmaster_Paypal {
 
                        if($logError)
                        {
-                           error_log("all conditions ok. calling Cart::AcceptPayment(\$_POST,'paypal')");
+                           error_log("all conditions ok. calling cart->accept_payment($payment_amount,'paypal', $currency_code, $txn_id)");
                        }
 
                        $errors = $cart->accept_payment( $payment_amount, 'paypal', $currency_code, $txn_id );
@@ -375,4 +383,3 @@ class Adhocmaster_Paypal {
 
 }
 
-add_action( 'c_f_process_data', array( 'Adhocmaster_Paypal', 'IPN' ) );
