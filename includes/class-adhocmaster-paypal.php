@@ -159,7 +159,10 @@ class Adhocmaster_Paypal {
 
         // echo "I am in IPN";
 
+
         $notification_type = get_query_var('notification', '');
+
+        // file_put_contents( "cf.txt", $notification_type );
 
         // var_dump($notification_type);
 
@@ -201,27 +204,58 @@ class Adhocmaster_Paypal {
         // var_dump($logError);
 
         // go through each of the POSTed vars and add them to the variable
+
+        if (function_exists('get_magic_quotes_gpc')) {
+          $get_magic_quotes_exists = true;
+        }
+
         foreach ($_POST as $key => $value) {
 
-            $value = urlencode(stripslashes($value));
+            if( $key == "payment_date" ) {
+
+                $value = str_replace("GMT ", "GMT+", $value);
+
+            }
+
+            if ($get_magic_quotes_exists == true && get_magic_quotes_gpc() == 1) 
+                $value = urlencode(stripslashes($value));
+            else 
+                $value = urlencode($value);
+
             $req .= "&$key=$value";
 
         }
+
+        if( get_option( 'PAYPAL_SANDBOX', 1 ) )
+           $host = 'www.sandbox.paypal.com';
+        else
+           $host = 'www.paypal.com';
+
         $header = '';
         // post back to PayPal system to validate
-        $header .= "POST /cgi-bin/webscr HTTP/1.0\r\n";
+        $header .= "POST /cgi-bin/webscr HTTP/1.1\r\n";
+        $header .= "Host: {$host}\r\n";
         $header .= "Content-Type: application/x-www-form-urlencoded\r\n";
-        $header .= "Content-Length: " . strlen($req) . "\r\n\r\n";
+        // $header .= "Content-Length: " . strlen($req) . "\r\n\r\n";
+        $header .= "Content-Length: " . strlen($req) . "\r\n";
+        $header .= "Connection: close\r\n\r\n";
 
         // In a live application send it back to www.paypal.com
         // but during development you will want to uswe the paypal sandbox
 
         // comment out one of the following lines
                       
-        if( get_option( 'PAYPAL_SANDBOX', 1 ) )
-           $fp = fsockopen ('www.sandbox.paypal.com', 80, $errno, $errstr, 30);
-        else
-           $fp = fsockopen ('www.paypal.com', 80, $errno, $errstr, 30);
+        // if( get_option( 'PAYPAL_SANDBOX', 1 ) )
+        //    $fp = fsockopen ('www.sandbox.paypal.com', 80, $errno, $errstr, 30);
+        // else
+        //    $fp = fsockopen ('www.paypal.com', 80, $errno, $errstr, 30);
+                      
+        // if( get_option( 'PAYPAL_SANDBOX', 1 ) )
+        //    $fp = fsockopen ('ssl://www.sandbox.paypal.com', 443, $errno, $errstr, 30);
+        // else
+        //    $fp = fsockopen ('ssl://www.paypal.com', 443, $errno, $errstr, 30);
+
+        $fp = fsockopen ('ssl://' . $host, 443, $errno, $errstr, 30);
 
         // or use port 443 for an SSL connection
         //$fp = fsockopen ('ssl://www.paypal.com', 443, $errno, $errstr, 30);
@@ -234,15 +268,25 @@ class Adhocmaster_Paypal {
         }
         else
         {     
-            if($logError)
+            if($logError) {
+
                 error_log( print_r($_POST,true) );
+                error_log( $header . $req );
+            }
 
             fputs ($fp, $header . $req);
 
             while (!feof($fp))
             {
                $res = fgets ($fp, 1024);
-               if (strcmp ($res, "VERIFIED") == 0)
+
+                if($logError) {
+
+                    error_log( $res);
+
+                }
+
+               if (stripos ($res, "VERIFIED") !== false )
                {
 
                     if($logError)
@@ -273,6 +317,14 @@ class Adhocmaster_Paypal {
 
                     $cart= new Adhocmaster_Cart( $cart_id );
 
+                    if( $cart->ID == 0) {
+
+                        error_log("Cart doesn't exists for invoice " . $invoiceId );
+
+                        break;
+
+                    }
+
                     if ( $cart->status == 'payment_received' )
                      error_log("Payment already received for cart # $cart_id before");
 
@@ -293,10 +345,10 @@ class Adhocmaster_Paypal {
 
                        if($logError)
                        {
-                           error_log("all conditions ok. calling cart->accept_payment($payment_amount,'paypal', $currency_code, $txn_id)");
+                           error_log("all conditions ok. calling cart->accept_payment($payment_amount,'paypal', $payment_currency, $txn_id)");
                        }
 
-                       $errors = $cart->accept_payment( $payment_amount, 'paypal', $currency_code, $txn_id );
+                       $errors = $cart->accept_payment( $payment_amount, 'paypal', $payment_currency, $txn_id );
 
                        if( !is_wp_error($errors) )
                        {
@@ -310,6 +362,8 @@ class Adhocmaster_Paypal {
                            $error_messages = implode( '\n', $errors->get_error_messages() );
                            $mail_Subject = "Error: completed status received from paypal for invoice $invoiceId";
                            $mail_Body = "Errors: {$error_messages} \n completed:  \n\nThe Invoice ID number is: $invoiceId but the invoice was not updated. Please update it manually";
+
+                           error_log($mail_Body);
 
                        }
 
@@ -349,14 +403,14 @@ class Adhocmaster_Paypal {
 
                     }
                }
-               else if (strcmp ($res, "INVALID") == 0)
+               else if (stripos ($res, "INVALID") !== false )
                {
                      //
                      // Paypal didnt like what we sent. If you start getting these after system was working ok in the past, check if Paypal has altered its IPN format
                      //   
                    
                      if($logError)
-                        error_log('INVALID for cartId'.$cart_id);
+                        error_log('INVALID for invoice ' . $_POST['invoice']);
                      $mail_Subject = "PayPal - Invalid IPN ";
 
                      $invoiceId = $_POST['invoice'];

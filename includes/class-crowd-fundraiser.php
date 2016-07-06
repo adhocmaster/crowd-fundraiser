@@ -160,7 +160,6 @@ class Crowd_Fundraiser {
 		
 		$this->loader->add_action( 'admin_init', $plugin_admin, 'init_settings' );
 
-		add_action( 'c_f_process_data', array( 'Adhocmaster_Paypal', 'IPN' ) );
 		
 
 	}
@@ -191,6 +190,7 @@ class Crowd_Fundraiser {
 		$page_controller = Crowd_Fundraiser_Page_Controller::get_instance($this->loader);
 
 
+		add_action( 'c_f_process_data', array( 'Adhocmaster_Paypal', 'IPN' ) );
 
 	}
 
